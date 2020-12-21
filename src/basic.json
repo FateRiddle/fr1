@@ -1,6 +1,20 @@
 {
   "type": "object",
   "properties": {
+    "listName": {
+      "title": "对象数组",
+      "description": "对象数组嵌套功能",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "inputName": {
+            "title": "简单输入框",
+            "type": "string"
+          }
+        }
+      }
+    },
     "AllString": {
       "title": "string类",
       "type": "object",

@@ -1,6 +1,50 @@
 import { nanoid } from 'nanoid';
 import deepClone from 'clone';
 
+// 后面三个参数都是内部递归使用的，将schema的树形结构扁平化成一层, 每个item的结构
+// {
+//   parent: '#',
+//   schema: ...,
+//   children: []
+// }
+
+// TODO: 检验是否丢进去各种schema都能兜底不会crash
+
+export function flattenSchema(schema, name = '#', parent, result = {}) {
+  const _schema = deepClone(schema);
+  let _name = name;
+  if (!_schema.$id) {
+    _schema.$id = _name; // 给生成的schema添加一个唯一标识，方便从schema中直接读取
+  }
+  const children = [];
+  const isObj = _schema.type === 'object' && _schema.properties;
+  const isList = _schema.type === 'array' && _schema.items && _schema.items.properties;
+  if (isObj) {
+    Object.entries(_schema.properties).forEach(([key, value]) => {
+      const uniqueName = _name + '.' + key;
+      children.push(uniqueName);
+      flattenSchema(value, uniqueName, _name, result);
+    });
+    delete _schema.properties;
+  }
+  if (isList) {
+    _name = _name + '[]';
+    Object.entries(_schema.items.properties).forEach(([key, value]) => {
+      const uniqueName = _name + '.' + key;
+      children.push(uniqueName);
+      flattenSchema(value, uniqueName, _name, result);
+    });
+    delete _schema.items.properties;
+  }
+  if (_schema.type) {
+    // TODO: 没有想好 validation 的部分
+    result[_name] = { parent, schema: _schema, children };
+  }
+  return result;
+}
+
+//////////   old
+
 function stringContains(str, text) {
   return str.indexOf(text) > -1;
 }
@@ -205,42 +249,6 @@ export function isFunctionSchema(schema) {
       return false;
     }
   });
-}
-
-// 后面三个参数都是内部递归使用的，将schema的树形结构扁平化成一层, 每个item的结构
-// {
-//   parent: '#',
-//   schema: ...,
-//   children: []
-// }
-export function flattenSchema(schema, name = '#', parent, result = {}) {
-  const _schema = deepClone(schema);
-  if (!_schema.$id) {
-    _schema.$id = name; // 给生成的schema添加一个唯一标识，方便从schema中直接读取
-  }
-  const children = [];
-  const isObj = _schema.type === 'object' && _schema.properties;
-  const isList = _schema.type === 'array' && _schema.items && _schema.items.properties;
-  if (isObj) {
-    Object.entries(_schema.properties).forEach(([key, value]) => {
-      const uniqueName = name + '/' + key;
-      children.push(uniqueName);
-      flattenSchema(value, uniqueName, name, result);
-    });
-    delete _schema.properties;
-  }
-  if (isList) {
-    Object.entries(_schema.items.properties).forEach(([key, value]) => {
-      const uniqueName = name + '/' + key;
-      children.push(uniqueName);
-      flattenSchema(value, uniqueName, name, result);
-    });
-    delete _schema.items.properties;
-  }
-  if (_schema.type) {
-    result[name] = { parent, schema: _schema, children };
-  }
-  return result;
 }
 
 export const getKeyFromUniqueId = (uniqueId = '#') => {
