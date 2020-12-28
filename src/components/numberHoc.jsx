@@ -5,8 +5,10 @@
 
 import React from 'react';
 
-export default (NumberComponent) => (p) => {
-  const style = p.invalid ? { borderColor: '#f5222d' } : {};
+export default NumberComponent => p => {
+  const style = p.invalid
+    ? { borderColor: '#ff4d4f', boxShadow: '0 0 0 2px rgba(255,77,79,.2)' }
+    : {};
   const { max, min, step } = p.schema;
   let obj = {};
   if (max || max === 0) {
@@ -21,14 +23,18 @@ export default (NumberComponent) => (p) => {
     obj = { ...obj, step };
   }
 
+  const onChange = value => {
+    p.onChange(p.name, value);
+  };
+
   return (
     <NumberComponent
       {...obj}
       style={{ width: '100%', ...style }}
-      disabled={p.disabled || p.readonly}
+      disabled={p.disabled || p.readOnly}
       {...p.options}
       value={p.value}
-      onChange={p.onChange}
+      onChange={onChange}
     />
   );
 };
