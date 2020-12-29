@@ -21,6 +21,7 @@
       "properties": {
         "input": {
           "title": "简单输入框",
+          "bind": "a.b",
           "type": "string",
           "ui:options": {
             "placeholder": "昵称"
@@ -32,6 +33,7 @@
           "format": "textarea"
         },
         "color": {
+          "bind": "color",
           "title": "颜色选择",
           "type": "string",
           "format": "color"

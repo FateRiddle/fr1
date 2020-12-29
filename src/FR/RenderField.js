@@ -59,7 +59,11 @@ const RenderField = ({
   }
 
   const onChange = value => {
-    onItemChange($id, value);
+    let path = $id;
+    if (schema && schema.bind && typeof schema.bind === 'string') {
+      path = schema.bind;
+    }
+    onItemChange(path, value);
   };
 
   let contentStyle = {};
