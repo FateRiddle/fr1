@@ -10,36 +10,36 @@ import deepClone from 'clone';
 
 // TODO: 检验是否丢进去各种schema都能兜底不会crash
 
-export function flattenSchema(schema, name = '#', parent, result = {}) {
-  const _schema = deepClone(schema);
+export function flattenSchema(_schema, name = '#', parent, result = {}) {
+  const schema = deepClone(_schema); // TODO: 是否需要deepClone，这个花费是不是有点大
   let _name = name;
-  if (!_schema.$id) {
-    _schema.$id = _name; // 给生成的schema添加一个唯一标识，方便从schema中直接读取
+  if (!schema.$id) {
+    schema.$id = _name; // 给生成的schema添加一个唯一标识，方便从schema中直接读取
   }
   const children = [];
-  const isObj = _schema.type === 'object' && _schema.properties;
+  const isObj = schema.type === 'object' && schema.properties;
   const isList =
-    _schema.type === 'array' && _schema.items && _schema.items.properties;
+    schema.type === 'array' && schema.items && schema.items.properties;
   if (isObj) {
-    Object.entries(_schema.properties).forEach(([key, value]) => {
-      const uniqueName = _name + '.' + key;
+    Object.entries(schema.properties).forEach(([key, value]) => {
+      const uniqueName = _name === '#' ? key : _name + '.' + key;
       children.push(uniqueName);
       flattenSchema(value, uniqueName, _name, result);
     });
-    delete _schema.properties;
+    delete schema.properties;
   }
   if (isList) {
     _name = _name + '[]';
-    Object.entries(_schema.items.properties).forEach(([key, value]) => {
+    Object.entries(schema.items.properties).forEach(([key, value]) => {
       const uniqueName = _name + '.' + key;
       children.push(uniqueName);
       flattenSchema(value, uniqueName, _name, result);
     });
-    delete _schema.items.properties;
+    delete schema.items.properties;
   }
-  if (_schema.type) {
+  if (schema.type) {
     // TODO: 没有想好 validation 的部分
-    result[_name] = { parent, schema: _schema, children };
+    result[_name] = { parent, schema: schema, children };
   }
   return result;
 }

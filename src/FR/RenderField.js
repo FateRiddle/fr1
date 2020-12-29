@@ -1,11 +1,27 @@
 import React from 'react';
 import { useStore } from '../hooks';
+import { get } from 'lodash';
 import { isLooselyNumber, isCssLength, getParentProps } from '../utils';
 import { getWidgetName } from '../mapping';
 
-const RenderField = ({ $id, data, item, labelClass, contentClass, isComplex, children }) => {
+const RenderField = ({
+  $id,
+  item,
+  labelClass,
+  contentClass,
+  isComplex,
+  children,
+}) => {
   const { schema } = item;
-  const { onItemChange, flatten, widgets, mapping, frProps = {} } = useStore();
+  const {
+    onItemChange,
+    flatten,
+    formData,
+    widgets,
+    mapping,
+    frProps = {},
+  } = useStore();
+  const data = $id === '#' ? formData : get(formData, $id);
   const { labelWidth, displayType, showDescIcon, showValidate } = frProps;
   const { type, title, description, required } = schema;
   const isRequired = required && required.length > 0;
@@ -27,7 +43,8 @@ const RenderField = ({ $id, data, item, labelClass, contentClass, isComplex, chi
   //   console.log(schema['ui:widget'], customWidget, Widget);
   // }
   // 真正有效的label宽度需要从现在所在item开始一直往上回溯（设计成了继承关系），找到的第一个有值的 ui:labelWidth
-  const effectiveLabelWidth = getParentProps('ui:labelWidth', $id, flatten) || labelWidth;
+  const effectiveLabelWidth =
+    getParentProps('ui:labelWidth', $id, flatten) || labelWidth;
   const _labelWidth = isLooselyNumber(effectiveLabelWidth)
     ? Number(effectiveLabelWidth)
     : isCssLength(effectiveLabelWidth)
@@ -41,7 +58,7 @@ const RenderField = ({ $id, data, item, labelClass, contentClass, isComplex, chi
     labelStyle = { flexGrow: 1 };
   }
 
-  const onChange = (value) => {
+  const onChange = value => {
     onItemChange($id, value);
   };
 
@@ -66,13 +83,17 @@ const RenderField = ({ $id, data, item, labelClass, contentClass, isComplex, chi
         <div className={labelClass} style={labelStyle}>
           <label
             className={`fr-label-title ${
-              widgetName === 'checkbox' || displayType === 'column' ? 'no-colon' : ''
+              widgetName === 'checkbox' || displayType === 'column'
+                ? 'no-colon'
+                : ''
             }`} // checkbox不带冒号
             title={title}
           >
             {isRequired && <span className="fr-label-required"> *</span>}
             <span
-              className={`${isComplex ? 'b' : ''} ${displayType === 'column' ? 'flex-none' : ''}`}
+              className={`${isComplex ? 'b' : ''} ${
+                displayType === 'column' ? 'flex-none' : ''
+              }`}
             >
               {title}
             </span>

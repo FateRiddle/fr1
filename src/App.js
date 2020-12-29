@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { flattenSchema } from './utils';
 import FR from './FR';
 import { Ctx, StoreCtx, useSet } from './hooks';
@@ -7,37 +7,45 @@ import { mapping as defaultMapping } from './mapping';
 import { set } from 'lodash';
 // import './atom.css';
 
-function App({ schema, flatten, widgets, mapping, ...rest }) {
-  const _flatten = flatten || flattenSchema(schema);
+export const useForm = () => {
   const [state, setState] = useSet({
     formData: {}, // TODO: 初始值从外部传入
   });
-
   const { formData } = state;
 
-  const onItemChange = (id, newData) => {
+  const onItemChange = (id, value) => {
     if (typeof id !== 'string') return;
-    if (id[0] !== '#') return;
     if (id === '#') {
-      setState({ formData: newData });
+      setState({ formData: value });
       return;
     }
-    let path = id.substring(2);
-    console.log(id, newData, formData);
-    const newFormData = set(formData, path, newData);
-    console.log(newFormData);
+    const newFormData = set(formData, id, value);
     setState({ formData: newFormData });
   };
 
-  const store = {
-    flatten: _flatten,
+  const getValues = () => formData;
+
+  const form = {
     onItemChange,
     formData,
+    getValues,
+  };
+  return form;
+};
+
+function App({ schema, flatten, widgets, mapping, form, ...rest }) {
+  const _flatten = flatten || flattenSchema(schema);
+  // console.log(_flatten, form.formData);
+
+  const store = {
+    ...form,
+    flatten: _flatten,
     widgets: { ...defaultWidgets, ...widgets },
     mapping: { ...defaultMapping, ...mapping },
     ...rest,
   };
 
+  // TODO: Ctx 这层暂时不用，所有都放在StoreCtx，之后性能优化在把一些常量的东西提取出来
   return (
     <StoreCtx.Provider value={store}>
       <Ctx.Provider value={{}}>

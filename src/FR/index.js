@@ -6,7 +6,6 @@ import { get } from 'lodash';
 
 const FR = ({ id = '#' }) => {
   const { displayType, column, flatten, formData } = useStore();
-  const itemData = get(formData, id.substring(2));
   const item = flatten[id];
   if (!item) return null;
 
@@ -64,7 +63,8 @@ const FR = ({ id = '#' }) => {
       }
   }
   // 横排时
-  const isCheckBox = schema.type === 'boolean' && schema['ui:widget'] !== 'switch';
+  const isCheckBox =
+    schema.type === 'boolean' && schema['ui:widget'] !== 'switch';
   if (displayType === 'row' && !isComplex && !isCheckBox) {
     containerClass += ' flex items-center';
     labelClass += ' flex-shrink-0 fr-label-row';
@@ -80,7 +80,6 @@ const FR = ({ id = '#' }) => {
   const fieldProps = {
     $id: id,
     item,
-    data: itemData,
     labelClass,
     contentClass,
     isComplex,
@@ -96,7 +95,9 @@ const FR = ({ id = '#' }) => {
   // TODO: list 也要算进去
   return (
     <div style={columnStyle} className={containerClass}>
-      <RenderField {...fieldProps}>{(isObj || isList) && childrenElement}</RenderField>
+      <RenderField {...fieldProps}>
+        {(isObj || isList) && childrenElement}
+      </RenderField>
     </div>
   );
 };
