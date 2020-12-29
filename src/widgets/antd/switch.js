@@ -1,12 +1,12 @@
 import React from 'react';
 import { Switch } from 'antd';
 
-export default function sw(p) {
+export default function sw({ disabled, readonly, onChange, value, ...rest }) {
   return (
     <Switch
-      disabled={p.disabled || p.readonly}
-      onChange={checked => p.onChange(p.name, checked)}
-      defaultChecked={p.value}
+      disabled={disabled || readonly}
+      onChange={onChange}
+      checked={value}
     />
   );
 }

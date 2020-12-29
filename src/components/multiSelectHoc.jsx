@@ -8,7 +8,7 @@ import { getArray } from '../utils';
 
 export default MultiComponent => p => {
   const { Option } = MultiComponent;
-  const onChange = value => p.onChange(p.name, value);
+  const onChange = value => p.onChange(value);
   const style = p.invalid
     ? { borderColor: '#ff4d4f', boxShadow: '0 0 0 2px rgba(255,77,79,.2)' }
     : {};
