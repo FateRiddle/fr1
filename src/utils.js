@@ -8,8 +8,23 @@ import deepClone from 'clone';
 //   children: []
 // }
 
-// TODO: 检验是否丢进去各种schema都能兜底不会crash
+window.blog = value => {
+  console.log('%ccommon:', 'color: #00A7F7; font-weight: 500;', value);
+};
 
+window.rlog = value => {
+  console.log('%cwarning:', 'color: #f50; font-weight: 500;', value);
+};
+
+window.glog = value => {
+  console.log('%csuccess:', 'color: #87d068; font-weight: 500;', value);
+};
+
+window.plog = value => {
+  console.log('%cspecial:', 'color: #722ed1; font-weight: 500;', value);
+};
+
+// TODO: 检验是否丢进去各种schema都能兜底不会crash
 export function flattenSchema(_schema, name = '#', parent, result = {}) {
   const schema = deepClone(_schema); // TODO: 是否需要deepClone，这个花费是不是有点大
   let _name = name;
@@ -900,3 +915,11 @@ export const isEmail = value => {
   }
   return false;
 };
+
+export function defaultGetValueFromEvent(valuePropName, ...args) {
+  const event = args[0];
+  if (event && event.target && valuePropName in event.target) {
+    return event.target[valuePropName];
+  }
+  return event;
+}
