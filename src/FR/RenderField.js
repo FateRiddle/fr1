@@ -21,7 +21,12 @@ const RenderField = ({
     mapping,
     frProps = {},
   } = useStore();
-  const data = $id === '#' ? formData : get(formData, $id);
+  // 计算数据的真实路径，bind字段会影响
+  let dataPath = $id;
+  if (schema && schema.bind && typeof schema.bind === 'string') {
+    dataPath = schema.bind;
+  }
+  const data = dataPath === '#' ? formData : get(formData, dataPath); // TODO: getDataFromPath 是否需要封装一下
   const { labelWidth, displayType, showDescIcon, showValidate } = frProps;
   const { type, title, description, required } = schema;
   const isRequired = required && required.length > 0;
@@ -59,11 +64,7 @@ const RenderField = ({
   }
 
   const onChange = value => {
-    let path = $id;
-    if (schema && schema.bind && typeof schema.bind === 'string') {
-      path = schema.bind;
-    }
-    onItemChange(path, value);
+    onItemChange(dataPath, value);
   };
 
   let contentStyle = {};
