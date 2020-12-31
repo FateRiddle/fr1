@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useStore } from '../hooks';
 import { get } from 'lodash';
 import { isLooselyNumber, isCssLength, getParentProps } from '../utils';
+import { createWidget } from '../HOC';
 import { getWidgetName } from '../mapping';
 
 const RenderField = ({
@@ -26,9 +27,15 @@ const RenderField = ({
   if (schema && schema.bind && typeof schema.bind === 'string') {
     dataPath = schema.bind;
   }
-  const data = dataPath === '#' ? formData : get(formData, dataPath); // TODO: getDataFromPath 是否需要封装一下
+  // 3种情况，"#"、"a.b.c"、["a.b.c", "e.d.f"]
+  let data;
+  if (dataPath === '#') {
+    data = formData;
+  } else if (typeof dataPath === 'string') {
+    data = get(formData, dataPath);
+  }
   const { labelWidth, displayType, showDescIcon, showValidate } = frProps;
-  const { type, title, description, required } = schema;
+  const { title, description, required } = schema;
   const isRequired = required && required.length > 0;
 
   let widgetName = getWidgetName(schema, mapping);
@@ -42,8 +49,12 @@ const RenderField = ({
     const defaultSchema = { ...schema };
     delete defaultSchema['ui:widget'];
     widgetName = getWidgetName(defaultSchema, mapping);
-    Widget = widgets[widgetName] || 'input';
+    Widget = widgets[widgetName] || widgets['input'];
   }
+
+  // 使用useMemo，终于搞定了！如果这里不限制会每次都重复创建组件，不仅有性能问题，还会造成光标丢失
+  const MyWidget = useMemo(() => createWidget()(Widget), [widgetName]);
+
   // if (widgetName === 'multiSelect') {
   //   console.log(schema['ui:widget'], customWidget, Widget);
   // }
@@ -72,14 +83,12 @@ const RenderField = ({
     contentStyle.marginLeft = effectiveLabelWidth;
   }
 
-  // TODO: useMemo
-  const usefulWidgetProps = {
-    disabled: schema['ui:disabled'],
-    readonly: schema['ui:readonly'],
-    hidden: schema['ui:hidden'],
-    options: schema['ui:options'],
-    labelWidth: schema['ui:labelWidth'],
-    width: schema['ui:width'],
+  const widgetProps = {
+    schema,
+    onChange,
+    onItemChange,
+    value: data,
+    children,
   };
 
   return (
@@ -121,13 +130,7 @@ const RenderField = ({
         </div>
       ) : null}
       <div className={contentClass} style={contentStyle}>
-        <Widget
-          value={data}
-          onChange={onChange}
-          schema={schema}
-          {...usefulWidgetProps}
-          children={children}
-        />
+        {MyWidget && <MyWidget {...widgetProps} />}
       </div>
     </>
   );

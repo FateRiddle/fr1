@@ -35,7 +35,7 @@ export const useForm = () => {
 
 function App({ schema, flatten, widgets, mapping, form, ...rest }) {
   const _flatten = flatten || flattenSchema(schema);
-  // console.log(_flatten, form.formData);
+  window.blog(_flatten, form.formData);
 
   const store = {
     ...form,
@@ -56,5 +56,7 @@ function App({ schema, flatten, widgets, mapping, form, ...rest }) {
     </StoreCtx.Provider>
   );
 }
+
+export { createWidget } from './HOC';
 
 export default App;

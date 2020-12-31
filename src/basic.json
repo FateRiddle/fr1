@@ -15,6 +15,11 @@
         }
       }
     },
+    "percentage": {
+      "title": "百分比",
+      "type": "number",
+      "ui:widget": "percent"
+    },
     "AllString": {
       "title": "string类",
       "type": "object",
@@ -82,7 +87,10 @@
       "properties": {
         "radio": {
           "title": "是否通过",
-          "type": "boolean"
+          "type": "boolean",
+          "valuePropName": "checked",
+          "ui:disabled": true,
+          "default": true
         },
         "switch": {
           "title": "开关控制",
