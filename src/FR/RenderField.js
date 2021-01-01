@@ -24,16 +24,26 @@ const RenderField = ({
   } = useStore();
   // 计算数据的真实路径，bind字段会影响
   let dataPath = $id;
-  if (schema && schema.bind && typeof schema.bind === 'string') {
-    dataPath = schema.bind;
+  const isMultiPaths =
+    Array.isArray(schema.bind) &&
+    schema.bind.every(item => typeof item === 'string');
+  if (schema && schema.bind) {
+    if (typeof schema.bind === 'string' || isMultiPaths) {
+      dataPath = schema.bind;
+    }
   }
   // 3种情况，"#"、"a.b.c"、["a.b.c", "e.d.f"]
-  let data;
-  if (dataPath === '#') {
-    data = formData;
-  } else if (typeof dataPath === 'string') {
-    data = get(formData, dataPath);
-  }
+  const getValue = () => {
+    if (dataPath === '#') {
+      return formData;
+    } else if (typeof dataPath === 'string') {
+      return get(formData, dataPath);
+    } else if (isMultiPaths) {
+      return dataPath.map(path => get(formData, path));
+    }
+  };
+
+  const _value = getValue(dataPath, formData);
   const { labelWidth, displayType, showDescIcon, showValidate } = frProps;
   const { title, description, required } = schema;
   const isRequired = required && required.length > 0;
@@ -75,7 +85,14 @@ const RenderField = ({
   }
 
   const onChange = value => {
-    onItemChange(dataPath, value);
+    if (isMultiPaths && Array.isArray(value)) {
+      dataPath.forEach((p, idx) => {
+        if (value[idx] === null) return; // TODO: 为了允许onChange只改部分值，如果传null就不改。想一想会不会有确实需要改值为null的可能？
+        onItemChange(p, value[idx]);
+      });
+    } else {
+      onItemChange(dataPath, value);
+    }
   };
 
   let contentStyle = {};
@@ -87,7 +104,7 @@ const RenderField = ({
     schema,
     onChange,
     onItemChange,
-    value: data,
+    value: _value,
     children,
   };
 
