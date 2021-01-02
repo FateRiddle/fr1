@@ -43,7 +43,7 @@ export function getWidgetName(schema, _mapping = mapping) {
   }
   list.push(type); // 放在最后兜底，其他都不match时使用type默认的组件
   let found = '';
-  list.some((item) => {
+  list.some(item => {
     found = _mapping[item];
     return !!found;
   });

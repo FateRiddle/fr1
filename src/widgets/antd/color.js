@@ -5,11 +5,11 @@ import 'rc-color-picker/assets/index.css';
 
 export default function color(p) {
   const { format } = p.schema;
-  const onPickerChange = (e) => {
+  const onPickerChange = e => {
     if (p.disabled || p.readonly) return;
     p.onChange(e.color);
   };
-  const onInputChange = (e) => {
+  const onInputChange = e => {
     // const isHex = value.match(/^(#{0,1})([0-9A-F]{6})$/i);
     p.onChange(e.target.value);
   };

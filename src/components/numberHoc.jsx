@@ -24,7 +24,7 @@ export default NumberComponent => p => {
   }
 
   const onChange = value => {
-    p.onChange(p.name, value);
+    p.onChange(value);
   };
 
   return (

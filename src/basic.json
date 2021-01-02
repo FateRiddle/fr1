@@ -3,7 +3,7 @@
   "properties": {
     "dateRangeExample": {
       "title": "日期范围",
-      "bind": ["time1.startDate", "time1.endDate"],
+      "bind": ["startDate", "endDate"],
       "type": "range",
       "format": "date"
     },
@@ -32,7 +32,7 @@
       "properties": {
         "input": {
           "title": "简单输入框",
-          "bind": "a.b",
+          "bind": "a.b.c",
           "type": "string",
           "ui:options": {
             "placeholder": "昵称"

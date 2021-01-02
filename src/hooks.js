@@ -1,4 +1,11 @@
-import { useReducer, useContext, useRef, useEffect, useState, createContext } from 'react';
+import {
+  useReducer,
+  useContext,
+  useRef,
+  useEffect,
+  useState,
+  createContext,
+} from 'react';
 
 export const Ctx = createContext(() => {});
 export const StoreCtx = createContext({});
@@ -30,8 +37,8 @@ export const useStore = () => {
 
 // export default logger;
 
-// 类似于class component的setState
-export const useSet = (initState) => {
+// 类似于class component 的 setState
+export const useSet = initState => {
   const [state, setState] = useReducer((state, newState) => {
     let action = newState;
     if (typeof newState === 'function') {
@@ -100,7 +107,7 @@ export function usePrevious(value) {
   return ref.current;
 }
 
-export const useShowOnce = (localKey) => {
+export const useShowOnce = localKey => {
   // 从 localStorage 读取 key 值
   const [show, setShow] = useState(false);
   let localStr;
@@ -120,7 +127,7 @@ export const useModal = () => {
   return [show, toggle];
 };
 
-export const useWindowState = (initState) => {
+export const useWindowState = initState => {
   const [state, setState] = useState(initState);
   return [state, setState];
 };
@@ -140,7 +147,7 @@ export const useStorageState = (initState = {}, searchKey = 'SAVES') => {
   };
   const [data, setData] = useState(readSearchFromStorage());
   // 存储搜索值到 localStorage
-  const setSearchWithStorage = (search) => {
+  const setSearchWithStorage = search => {
     setData(search);
     localStorage.setItem(searchKey, JSON.stringify(search));
   };

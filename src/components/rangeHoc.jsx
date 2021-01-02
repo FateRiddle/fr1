@@ -10,14 +10,14 @@ import { getFormat } from '../utils';
 export default ({
   onChange,
   RangeComponent,
-  schema = {},
   value,
+  schema = {},
   options,
   disabled,
   readOnly,
 }) => {
   let { format = 'dateTime' } = schema;
-  if (options.format) {
+  if (options && options.format) {
     format = options.format;
   }
   const dateFormat = getFormat(format);
