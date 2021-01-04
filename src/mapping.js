@@ -12,7 +12,7 @@ export const mapping = {
   'string:time': 'date',
   'string:textarea': 'textarea',
   'string:color': 'color',
-  'string:image': 'input',
+  'string:image': 'imageInput',
   'range:date': 'dateRange',
   'range:dateTime': 'dateRange',
   '*?enum': 'select',
@@ -49,3 +49,12 @@ export function getWidgetName(schema, _mapping = mapping) {
   });
   return found;
 }
+
+export const extraSchemaList = {
+  checkbox: {
+    valuePropName: 'checked',
+  },
+  switch: {
+    valuePropName: 'checked',
+  },
+};
