@@ -1,12 +1,18 @@
 import React, { useEffect, useMemo } from 'react';
 import { useStore } from '../hooks';
 import { get } from 'lodash';
-import { isLooselyNumber, isCssLength, getParentProps } from '../utils';
+import {
+  isLooselyNumber,
+  isCssLength,
+  getParentProps,
+  getDataPath,
+} from '../utils';
 import { createWidget } from '../HOC';
 import { getWidgetName } from '../mapping';
 
 const RenderField = ({
   $id,
+  dataIndex,
   item,
   labelClass,
   contentClass,
@@ -23,7 +29,8 @@ const RenderField = ({
     frProps = {},
   } = useStore();
   // 计算数据的真实路径，bind字段会影响
-  let dataPath = $id;
+  let dataPath = getDataPath($id, dataIndex);
+  // TODO: bind 允许bind数组，如果是bind数组，需要更多的处理
   const isMultiPaths =
     Array.isArray(schema.bind) &&
     schema.bind.every(item => typeof item === 'string');
@@ -32,7 +39,8 @@ const RenderField = ({
       dataPath = schema.bind;
     }
   }
-  // 3种情况，"#"、"a.b.c"、["a.b.c", "e.d.f"]
+
+  // dataPath 有3种情况："#"、"a.b.c"、["a.b.c", "e.d.f"]
   const getValue = () => {
     if (dataPath === '#') {
       return formData;

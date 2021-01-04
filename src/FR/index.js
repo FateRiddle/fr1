@@ -1,17 +1,17 @@
 import React from 'react';
-import RenderChildren from './RenderChildren';
+import { RenderList, RenderObject } from './RenderChildren';
 import RenderField from './RenderField';
 import { useStore } from '../hooks';
-import { get } from 'lodash';
+import { isListType } from '../utils';
 
-const FR = ({ id = '#' }) => {
+const FR = ({ id = '#', dataIndex = [] }) => {
   const { displayType, column, flatten, formData } = useStore();
   const item = flatten[id];
   if (!item) return null;
 
   const { schema } = item;
   const isObj = schema.type === 'object';
-  const isList = schema.type === 'array' && schema.enum === undefined;
+  const isList = isListType(schema);
   const isComplex = isObj || isList;
   const width = schema['ui:width'];
   let containerClass = `fr-field w-100 ${isComplex ? 'fr-field-complex' : ''}`;
@@ -79,16 +79,26 @@ const FR = ({ id = '#' }) => {
 
   const fieldProps = {
     $id: id,
+    dataIndex,
     item,
     labelClass,
     contentClass,
     isComplex,
   };
 
-  const childrenElement =
+  const objChildren =
     item.children && item.children.length > 0 ? (
       <ul className={`flex flex-wrap pl0`}>
-        <RenderChildren>{item.children}</RenderChildren>
+        <RenderObject dataIndex={dataIndex}>{item.children}</RenderObject>
+      </ul>
+    ) : null;
+
+  const listChildren =
+    item.children && item.children.length > 0 ? (
+      <ul className={`flex flex-wrap pl0`}>
+        <RenderList parentId={id} dataIndex={dataIndex}>
+          {item.children}
+        </RenderList>
       </ul>
     ) : null;
 
@@ -96,7 +106,8 @@ const FR = ({ id = '#' }) => {
   return (
     <div style={columnStyle} className={containerClass}>
       <RenderField {...fieldProps}>
-        {(isObj || isList) && childrenElement}
+        {isObj && objChildren}
+        {isList && listChildren}
       </RenderField>
     </div>
   );

@@ -24,6 +24,40 @@ window.plog = value => {
   console.log('%cspecial:', 'color: #722ed1; font-weight: 500;', value);
 };
 
+function removeBrackets(string) {
+  if (typeof string === 'string') {
+    return string.replace(/\[\]/g, '');
+  } else {
+    return string;
+  }
+}
+
+// id: 'a.b[].c[]'  dataIndex: [1,0] =>  'a.b[1].c[0]'
+export function getDataPath(id, dataIndex) {
+  if (id === '#') {
+    return id;
+  }
+  if (typeof id !== 'string')
+    throw Error('id is not a string!!! Something wrong here');
+  let _id = id;
+  if (Array.isArray(dataIndex)) {
+    // const matches = id.match(/\[\]/g) || [];
+    // const count = matches.length;
+    dataIndex.forEach(item => {
+      _id = _id.replace(/\[\]/, `[${item}]`);
+    });
+  }
+  return removeBrackets(_id);
+}
+
+export function isListType(schema) {
+  return schema.type === 'array' && schema.items && schema.enum === undefined;
+}
+
+export function isObjType(schema) {
+  return schema.type === 'object' && schema.properties;
+}
+
 // TODO: 检验是否丢进去各种schema都能兜底不会crash
 export function flattenSchema(_schema, name = '#', parent, result = {}) {
   const schema = deepClone(_schema); // TODO: 是否需要deepClone，这个花费是不是有点大
@@ -32,21 +66,19 @@ export function flattenSchema(_schema, name = '#', parent, result = {}) {
     schema.$id = _name; // 给生成的schema添加一个唯一标识，方便从schema中直接读取
   }
   const children = [];
-  const isObj = schema.type === 'object' && schema.properties;
-  const isList =
-    schema.type === 'array' && schema.items && schema.items.properties;
-  if (isObj) {
+  if (isObjType(schema)) {
     Object.entries(schema.properties).forEach(([key, value]) => {
-      const uniqueName = _name === '#' ? key : _name + '.' + key;
+      const _key = isListType(value) ? key + '[]' : key;
+      const uniqueName = _name === '#' ? _key : _name + '.' + _key;
       children.push(uniqueName);
       flattenSchema(value, uniqueName, _name, result);
     });
     delete schema.properties;
   }
-  if (isList) {
-    _name = _name + '[]';
+  if (isListType(schema)) {
     Object.entries(schema.items.properties).forEach(([key, value]) => {
-      const uniqueName = _name + '.' + key;
+      const _key = isListType(value) ? key + '[]' : key;
+      const uniqueName = _name === '#' ? _key : _name + '.' + _key;
       children.push(uniqueName);
       flattenSchema(value, uniqueName, _name, result);
     });
