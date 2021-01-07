@@ -10,6 +10,7 @@ import {
 import { createWidget } from '../HOC';
 import { getWidgetName, extraSchemaList } from '../mapping';
 import { defaultWidgetNameList } from '../widgets/antd';
+// TODO: 之后不要直接用get，收口到一个内部方法getValue，便于全局 ctrl + f 查找
 
 const RenderField = ({
   $id,
@@ -36,11 +37,12 @@ const RenderField = ({
     Array.isArray(schema.bind) &&
     schema.bind.every(item => typeof item === 'string');
   if (schema && schema.bind) {
-    if (typeof schema.bind === 'string' || isMultiPaths) {
-      dataPath = schema.bind;
+    if (typeof schema.bind === 'string') {
+      dataPath = getDataPath(schema.bind, dataIndex);
+    } else if (isMultiPaths) {
+      dataPath = schema.bind.map(b => getDataPath(b, dataIndex));
     }
   }
-
   // dataPath 有3种情况："#"、"a.b.c"、["a.b.c", "e.d.f"]
   const getValue = () => {
     if (dataPath === '#') {
