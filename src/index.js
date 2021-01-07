@@ -19,7 +19,7 @@ const PercentWidget = createWidget(({ value, onChange }) => ({
 const Demo = () => {
   const [display, setDisplay] = useState({});
 
-  const form = useForm(schema);
+  const form = useForm({ schema });
 
   // const submit = () => {
   //   const formData = form.getValues();

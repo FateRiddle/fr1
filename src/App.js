@@ -4,10 +4,10 @@ import FR from './FR';
 import { Ctx, StoreCtx, useSet } from './hooks';
 import { widgets as defaultWidgets } from './widgets/antd';
 import { mapping as defaultMapping } from './mapping';
-import { set } from 'lodash';
+import { set, unset } from 'lodash';
 // import './atom.css';
 
-export const useForm = schema => {
+export const useForm = ({ schema, flatten }) => {
   const [state, setState] = useSet({
     formData: {}, // TODO: 初始值从外部传入
     watchConfig: {}, // 所有全局的watch，类似vue
@@ -23,6 +23,8 @@ export const useForm = schema => {
     isValidating,
     isSubmitting,
   } = state;
+
+  const _flatten = flatten || flattenSchema(schema);
 
   const onItemChange = (path, value) => {
     if (typeof path !== 'string') return;
@@ -42,7 +44,32 @@ export const useForm = schema => {
     setState({ isValidating: true, isSubmitting: true });
     //  https://formik.org/docs/guides/form-submission
     // TODO: 更多的处理，注意处理的时候一定要是copy一份formData，否则submitresult会和表单操作实时同步的。。而不是submit再变动了
-    const processData = data => JSON.parse(JSON.stringify(data));
+    const processData = data => {
+      let _data = JSON.parse(JSON.stringify(data));
+      const unbindKeys = Object.keys(_flatten)
+        .map(key => {
+          const bind =
+            _flatten[key] && _flatten[key].schema && _flatten[key].schema.bind;
+          if (bind === false) {
+            return key;
+          }
+          return undefined;
+        })
+        .filter(key => !!key);
+      const removeUnbindData = _data => {
+        unbindKeys.forEach(key => {
+          if (key.indexOf('[]') === -1) {
+            _data = unset(_data, key); // TODO: 光remove了一个key，如果遇到remove了那个key上层的object为空了，object是不是也要去掉。。。不过感觉是伪需求
+          } else {
+            const keys = key.split('[]').filter(k => !!k);
+            // TODO: 贼复杂，之后写吧
+          }
+        });
+      };
+      removeUnbindData(_data);
+      console.log('unbind', unbindKeys);
+      return _data;
+    };
     setState({
       submitResult: { formData: processData(formData), errorFields: [] },
       isValidating: false,
@@ -68,6 +95,7 @@ export const useForm = schema => {
     // state
     formData,
     schema,
+    flatten: _flatten,
     watchConfig,
     // methods
     onItemChange,
@@ -84,20 +112,19 @@ export const useForm = schema => {
   return form;
 };
 
-function App({ flatten, widgets, mapping, form, onFinish, ...rest }) {
+function App({ widgets, mapping, form, onFinish, ...rest }) {
   const {
-    schema,
+    flatten,
     submitResult,
     isSubmitting,
     isValidating,
     endSubmitting,
   } = form;
-  const _flatten = flatten || flattenSchema(schema);
-  // window.blog(_flatten, form.formData);
+  // window.blog(flatten, form.formData);
 
   const store = {
     ...form,
-    flatten: _flatten,
+    flatten,
     widgets: { ...defaultWidgets, ...widgets },
     mapping: { ...defaultMapping, ...mapping },
     ...rest,
@@ -105,7 +132,6 @@ function App({ flatten, widgets, mapping, form, onFinish, ...rest }) {
 
   useEffect(() => {
     if (!isValidating && isSubmitting) {
-      console.log(submitResult, 'submitresult');
       Promise.resolve(onFinish(submitResult)).then(endSubmitting);
     }
   }, [isValidating, isSubmitting]);

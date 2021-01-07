@@ -16,6 +16,7 @@
         "type": "object",
         "properties": {
           "inputName": {
+            "bind": false,
             "title": "简单输入框",
             "type": "string"
           },
@@ -51,6 +52,7 @@
           }
         },
         "textarea": {
+          "bind": false,
           "title": "简单文本编辑框",
           "type": "string",
           "format": "textarea"
