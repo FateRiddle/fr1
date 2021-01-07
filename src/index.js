@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import 'antd/dist/antd.css';
@@ -17,22 +17,27 @@ const PercentWidget = createWidget(({ value, onChange }) => ({
 }))(Percent);
 
 const Demo = () => {
-  const form = useForm();
+  const [display, setDisplay] = useState({});
 
-  const submit = () => {
-    const formData = form.getValues();
-    console.log(formData);
+  const form = useForm(schema);
+
+  // const submit = () => {
+  //   const formData = form.getValues();
+  //   console.log(formData);
+  // };
+
+  const onFinish = ({ formData }) => {
+    console.log(formData, 'formData');
+    setDisplay(formData);
   };
-
-  const onFinish = formData => {};
 
   // TODO: form 不传入，也可以用，至少可以展示
   return (
     <div>
-      <button onClick={submit}>提交</button>
+      <button onClick={form.submit}>提交</button>
+      <div>{JSON.stringify(display)}</div>
       <FormRender
         form={form}
-        schema={schema}
         onFinish={onFinish}
         widgets={{ percent: PercentWidget }}
       />
