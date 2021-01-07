@@ -37,8 +37,9 @@ export function getDataPath(id, dataIndex) {
   if (id === '#') {
     return id;
   }
-  if (typeof id !== 'string')
-    throw Error('id is not a string!!! Something wrong here');
+  if (typeof id !== 'string') {
+    throw Error(`id ${id} is not a string!!! Something wrong here`);
+  }
   let _id = id;
   if (Array.isArray(dataIndex)) {
     // const matches = id.match(/\[\]/g) || [];
@@ -59,7 +60,7 @@ export function isObjType(schema) {
 }
 
 // TODO: 检验是否丢进去各种schema都能兜底不会crash
-export function flattenSchema(_schema, name = '#', parent, result = {}) {
+export function flattenSchema(_schema = {}, name = '#', parent, result = {}) {
   const schema = deepClone(_schema); // TODO: 是否需要deepClone，这个花费是不是有点大
   let _name = name;
   if (!schema.$id) {

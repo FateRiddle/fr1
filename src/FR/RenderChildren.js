@@ -29,7 +29,6 @@ export const RenderList = ({ parentId, dataIndex = [], children = [] }) => {
     // TODO: listData会有不少“窟窿”，submit 的时候，listData也许需要补齐？
     listData = get(formData, dataPath);
   }
-  console.log(listData, 'listData');
 
   // TODO: 需要放到 useEffect 里
   useEffect(() => {
