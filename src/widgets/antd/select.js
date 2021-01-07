@@ -1,9 +1,24 @@
-/**
- * Updated by Tw93 on 2019-12-07.
- * 选择组件
- */
-
+import React from 'react';
 import { Select } from 'antd';
-import selectHoc from '../../components/selectHoc';
+import { createWidget } from '../../HOC';
+import { getArray } from '../../utils';
 
-export default selectHoc(Select);
+const mapProps = ({ schema, options: config }) => {
+  const { enum: enums, enumNames } = schema || {};
+  const options = getArray(enums).map((item, idx) => {
+    let label = enumNames && Array.isArray(enumNames) ? enumNames[idx] : item;
+    const isHtml = typeof label === 'string' && label[0] === '<';
+    if (isHtml) {
+      label = <span dangerouslySetInnerHTML={{ __html: label }} />;
+    }
+    return { label, value: item };
+  });
+
+  return {
+    options,
+    style: { width: '100%', ...(config && config.style) },
+    ...config,
+  };
+};
+
+export default createWidget(mapProps)(Select);
