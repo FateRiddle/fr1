@@ -1,15 +1,17 @@
 import React, { useMemo, useEffect } from 'react';
-import { useStore } from '../hooks';
+import { useStore } from '../../hooks';
 import {
   isLooselyNumber,
   isCssLength,
   getParentProps,
   getDataPath,
   getValueByPath,
-} from '../utils';
-import { createWidget } from '../HOC';
-import { getWidgetName, extraSchemaList } from '../mapping';
-import { defaultWidgetNameList } from '../widgets/antd';
+} from '../../utils';
+import { createWidget } from '../../HOC';
+import { getWidgetName, extraSchemaList } from '../../mapping';
+import { defaultWidgetNameList } from '../../widgets/antd';
+import ErrorMessage from './ErrorMessage';
+import FieldTitle from './Title';
 
 // TODO: 之后不要直接用get，收口到一个内部方法getValue，便于全局 ctrl + f 查找
 const RenderField = ({
@@ -18,7 +20,7 @@ const RenderField = ({
   item,
   labelClass,
   contentClass,
-  isComplex,
+  hasChildren,
   children,
   errorFields = [],
 }) => {
@@ -30,9 +32,12 @@ const RenderField = ({
     formData,
     widgets,
     mapping,
-    frProps = {},
     isValidating,
+    labelWidth,
+    displayType,
   } = useStore();
+  const isObjType = true;
+  // const isObjType = schema.type === 'object'; //TODO: 补全 & 统一判断
   // 计算数据的真实路径，bind字段会影响
   let dataPath = getDataPath($id, dataIndex);
   // TODO: bind 允许bind数组，如果是bind数组，需要更多的处理
@@ -68,10 +73,6 @@ const RenderField = ({
 
   // 从全局 formData 获取 value
   const _value = getValue(dataPath, formData);
-  const { labelWidth, displayType, showDescIcon, showValidate } = frProps;
-  const { title, description, required } = schema;
-  const isRequired = required && required.length > 0;
-
   let widgetName = getWidgetName(schema, mapping);
   const customWidget = schema['ui:widget'];
   if (customWidget && widgets[customWidget]) {
@@ -107,7 +108,7 @@ const RenderField = ({
   let labelStyle = { width: _labelWidth };
   if (widgetName === 'checkbox') {
     labelStyle = { flexGrow: 1 };
-  } else if (isComplex || displayType !== 'row') {
+  } else if (isObjType || displayType !== 'column') {
     labelStyle = { flexGrow: 1 };
   }
 
@@ -146,53 +147,24 @@ const RenderField = ({
     value: _value,
   };
 
+  if (hasChildren) {
+    widgetProps.children = children;
+  }
+
   // 避免传组件不接受的props，按情况传多余的props
   const isExternalWidget = defaultWidgetNameList.indexOf(widgetName) === -1; // 是否是外部组件
   if (isExternalWidget) {
     widgetProps.onItemChange = onItemChange; // 只给外部组件提供，默认的组件都是简单组件，不需要，多余的props会warning，很烦
   }
-  if (isComplex) {
-    widgetProps.children = children;
-  }
+
+  const titleProps = { labelClass, labelStyle, widgetName, schema };
 
   return (
     <>
-      {schema.title ? (
-        <div className={labelClass} style={labelStyle}>
-          <label
-            className={`fr-label-title ${
-              widgetName === 'checkbox' || displayType === 'column'
-                ? 'no-colon'
-                : ''
-            }`} // checkbox不带冒号
-            title={title}
-          >
-            {isRequired && <span className="fr-label-required"> *</span>}
-            <span
-              className={`${isComplex ? 'b' : ''} ${
-                displayType === 'column' ? 'flex-none' : ''
-              }`}
-            >
-              {title}
-            </span>
-            {description &&
-              (showDescIcon ? (
-                <span className="fr-tooltip-toggle" aria-label={description}>
-                  <i className="fr-tooltip-icon" />
-                  <div className="fr-tooltip-container">
-                    <i className="fr-tooltip-triangle" />
-                    {description}
-                  </div>
-                </span>
-              ) : (
-                <span className="fr-desc ml2">(&nbsp;{description}&nbsp;)</span>
-              ))}
-          </label>
-        </div>
-      ) : null}
+      {!!schema.title && <FieldTitle {...titleProps} />}
       <div className={contentClass} style={contentStyle}>
         {MyWidget && <MyWidget {...widgetProps} />}
-        <div style={{ color: '#ff4d4f' }}>{errorMessage}</div>
+        <ErrorMessage message={errorMessage} />
       </div>
     </>
   );

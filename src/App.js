@@ -226,7 +226,7 @@ export const useForm = ({ schema, flatten }) => {
   return form;
 };
 
-function App({ widgets, mapping, form, onFinish, ...rest }) {
+function App({ widgets, mapping, form, onFinish, displayType, ...rest }) {
   const {
     flatten,
     submitData,
@@ -241,6 +241,7 @@ function App({ widgets, mapping, form, onFinish, ...rest }) {
     flatten,
     widgets: { ...defaultWidgets, ...widgets },
     mapping: { ...defaultMapping, ...mapping },
+    displayType: displayType || 'row',
     ...rest,
   };
 
