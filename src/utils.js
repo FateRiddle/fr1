@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import deepClone from 'clone';
+import { get } from 'lodash';
 
 // 后面三个参数都是内部递归使用的，将schema的树形结构扁平化成一层, 每个item的结构
 // {
@@ -30,6 +31,38 @@ function removeBrackets(string) {
   } else {
     return string;
   }
+}
+
+export function getValueByPath(formData, path) {
+  if (path === '#') {
+    return formData;
+  } else if (typeof path === 'string') {
+    return get(formData, path);
+  }
+}
+
+//  path: 'a.b[1].c[0]' => { id: 'a.b[].c[]'  dataIndex: [1,0] }
+export function destructDataPath(path) {
+  let id;
+  let dataIndex;
+  if (path === '#') {
+    return { id: '#', dataIndex: [] };
+  }
+  if (typeof path !== 'string') {
+    throw Error(`path ${path} is not a string!!! Something wrong here`);
+  }
+  const pattern = /\[[0-9]+\]/g;
+  const matchList = path.match(pattern);
+  if (!matchList) {
+    id = path;
+  } else {
+    id = path.replace(pattern, '[]');
+    // 这个是match下来的结果，可安全处理
+    dataIndex = matchList.map(item =>
+      Number(item.substring(1, item.length - 1))
+    );
+  }
+  return { id, dataIndex };
 }
 
 // id: 'a.b[].c[]'  dataIndex: [1,0] =>  'a.b[1].c[0]'
@@ -85,9 +118,16 @@ export function flattenSchema(_schema = {}, name = '#', parent, result = {}) {
     });
     delete schema.items.properties;
   }
+
+  const rules = Array.isArray(schema.rules) ? [...schema.rules] : [];
+  if (schema.required === true) {
+    rules.push({ required: true }); // TODO: 万一内部已经用重复的required规则？
+  }
+
   if (schema.type) {
+    // Check: 为啥一定要有type？
     // TODO: 没有想好 validation 的部分
-    result[_name] = { parent, schema: schema, children };
+    result[_name] = { parent, schema: schema, children, rules };
   }
   return result;
 }
@@ -315,15 +355,6 @@ export const changeKeyFromUniqueId = (uniqueId = '#', key = 'something') => {
     arr[arr.length - 1] = key;
   }
   return arr.join('/');
-};
-
-const copyFlattenItem = _item => {
-  return {
-    parent: _item.parent,
-    schema: { ..._item.schema },
-    data: _item.data,
-    children: _item.children,
-  };
 };
 
 // final = true 用于最终的导出的输出

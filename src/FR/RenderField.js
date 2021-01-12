@@ -1,17 +1,17 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useStore } from '../hooks';
-import { get } from 'lodash';
 import {
   isLooselyNumber,
   isCssLength,
   getParentProps,
   getDataPath,
+  getValueByPath,
 } from '../utils';
 import { createWidget } from '../HOC';
 import { getWidgetName, extraSchemaList } from '../mapping';
 import { defaultWidgetNameList } from '../widgets/antd';
-// TODO: 之后不要直接用get，收口到一个内部方法getValue，便于全局 ctrl + f 查找
 
+// TODO: 之后不要直接用get，收口到一个内部方法getValue，便于全局 ctrl + f 查找
 const RenderField = ({
   $id,
   dataIndex,
@@ -20,15 +20,18 @@ const RenderField = ({
   contentClass,
   isComplex,
   children,
+  errorFields = [],
 }) => {
   const { schema } = item;
   const {
     onItemChange,
+    onItemValidate,
     flatten,
     formData,
     widgets,
     mapping,
     frProps = {},
+    isValidating,
   } = useStore();
   // 计算数据的真实路径，bind字段会影响
   let dataPath = getDataPath($id, dataIndex);
@@ -43,17 +46,27 @@ const RenderField = ({
       dataPath = schema.bind.map(b => getDataPath(b, dataIndex));
     }
   }
+
+  const errObj = errorFields.find(err => err.name === dataPath);
+  const errList = errObj && errObj.error;
+  const errorMessage = Array.isArray(errList) ? errList[0] : undefined;
+  errorMessage && console.log(errorMessage);
+
+  useEffect(() => {
+    if (isValidating) {
+      onChange(_value, true);
+    }
+  }, [isValidating]);
+
   // dataPath 有3种情况："#"、"a.b.c"、["a.b.c", "e.d.f"]
   const getValue = () => {
-    if (dataPath === '#') {
-      return formData;
-    } else if (typeof dataPath === 'string') {
-      return get(formData, dataPath);
-    } else if (isMultiPaths) {
-      return dataPath.map(path => get(formData, path));
+    if (isMultiPaths) {
+      return dataPath.map(path => getValueByPath(formData, path));
     }
+    return getValueByPath(formData, dataPath);
   };
 
+  // 从全局 formData 获取 value
   const _value = getValue(dataPath, formData);
   const { labelWidth, displayType, showDescIcon, showValidate } = frProps;
   const { title, description, required } = schema;
@@ -94,18 +107,31 @@ const RenderField = ({
   let labelStyle = { width: _labelWidth };
   if (widgetName === 'checkbox') {
     labelStyle = { flexGrow: 1 };
-  } else if (isComplex || displayType === 'column') {
+  } else if (isComplex || displayType !== 'row') {
     labelStyle = { flexGrow: 1 };
   }
 
-  const onChange = value => {
-    if (isMultiPaths && Array.isArray(value)) {
-      dataPath.forEach((p, idx) => {
-        if (value[idx] === null) return; // TODO: 为了允许onChange只改部分值，如果传null就不改。想一想会不会有确实需要改值为null的可能？
-        onItemChange(p, value[idx]);
-      });
-    } else {
-      onItemChange(dataPath, value);
+  const singleValidation = (path, value, rules) => {
+    if (Array.isArray(rules) && rules.length > 0) {
+      onItemValidate(path, value, rules);
+    }
+  };
+
+  // TODO: 优化一下，只有touch还是false的时候，setTouched
+  const onChange = (value, justValidate = false) => {
+    if (isMultiPaths) {
+      if (Array.isArray(value)) {
+        dataPath.forEach((p, idx) => {
+          if (value[idx] === null) return; // TODO: 为了允许onChange只改部分值，如果传null就不改。想一想会不会有确实需要改值为null的可能？
+          singleValidation(p, value[idx], item.rules);
+          !justValidate && onItemChange(p, value[idx]);
+          // !justValidate && setTouched(p, true);
+        });
+      }
+    } else if (typeof dataPath === 'string') {
+      singleValidation(dataPath, value, item.rules);
+      !justValidate && onItemChange(dataPath, value);
+      // !justValidate && setTouched(dataPath, true);
     }
   };
 
@@ -161,14 +187,12 @@ const RenderField = ({
               ) : (
                 <span className="fr-desc ml2">(&nbsp;{description}&nbsp;)</span>
               ))}
-            {displayType !== 'row' && showValidate && (
-              <span className="fr-validate">validation</span>
-            )}
           </label>
         </div>
       ) : null}
       <div className={contentClass} style={contentStyle}>
         {MyWidget && <MyWidget {...widgetProps} />}
+        <div style={{ color: '#ff4d4f' }}>{errorMessage}</div>
       </div>
     </>
   );

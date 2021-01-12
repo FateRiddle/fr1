@@ -7,7 +7,6 @@ import { Radio } from 'antd';
 import RadioHoc from '../../components/radioHoc';
 
 const RadioComponent = p => {
-  const { enum: enums, enumNames } = p.schema || {};
   const onChange = e => p.onChange(e.target.value);
   return <RadioHoc {...p} onChange={onChange} Radio={Radio} />;
 };

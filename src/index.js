@@ -17,7 +17,7 @@ const PercentWidget = createWidget(({ value, onChange }) => ({
 }))(Percent);
 
 const Demo = () => {
-  const [display, setDisplay] = useState({});
+  const [display, setDisplay] = useState({}); // TODO: 只是开发时候用
 
   const form = useForm({ schema });
 
@@ -26,16 +26,17 @@ const Demo = () => {
   //   console.log(formData);
   // };
 
-  const onFinish = ({ formData }) => {
-    console.log(formData, 'formData');
-    setDisplay(formData);
+  const onFinish = ({ formData, errorFields }) => {
+    console.log(formData, 'formData', errorFields, 'errors');
+    setDisplay([formData, errorFields]);
   };
 
   // TODO: form 不传入，也可以用，至少可以展示
   return (
     <div>
       <button onClick={form.submit}>提交</button>
-      <div>{JSON.stringify(display)}</div>
+      <div>{JSON.stringify(display[0])}</div>
+      <div>{JSON.stringify(display[1])}</div>
       <FormRender
         form={form}
         onFinish={onFinish}
