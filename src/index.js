@@ -35,13 +35,16 @@ const Demo = () => {
   return (
     <div>
       <button onClick={form.submit}>提交</button>
-      <div>{JSON.stringify(display[0])}</div>
-      <div>{JSON.stringify(display[1])}</div>
-      <FormRender
-        form={form}
-        onFinish={onFinish}
-        widgets={{ percent: PercentWidget }}
-      />
+      <div style={{ height: 40 }}>{JSON.stringify(display[0])}</div>
+      <div style={{ height: 40 }}>{JSON.stringify(display[1])}</div>
+      <div style={{ padding: 24 }}>
+        <FormRender
+          form={form}
+          onFinish={onFinish}
+          widgets={{ percent: PercentWidget }}
+          displayType="column"
+        />
+      </div>
     </div>
   );
 };

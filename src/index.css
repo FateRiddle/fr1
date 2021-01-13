@@ -1,26 +1,52 @@
 /*
   用于原有样式的覆盖
  */
-.fr-set {
-  padding: 12px 14px 12px 12px;
-  margin-bottom: 12px;
-  border-radius: 4px;
-}
 
 .fr-field {
-  margin-bottom: 24px;
+  font-size: 14px;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.85);
+  line-height: 1.5715;
+  /* font-variant: tabular-nums; */
+}
+
+.fr-field-column {
+  flex-direction: column;
+}
+
+.fr-field-object {
+  flex-direction: column;
 }
 
 .fr-label {
-  display: block;
+}
+
+.fr-label-column {
+  display: flex;
+  padding: 0 0 8px;
+  white-space: normal;
+  text-align: left;
+}
+
+.fr-label-row {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .fr-label-title {
   display: inline-flex;
-  color: #333;
   font-size: 14px;
   min-height: 22px; /* ""的标签页占位 */
   line-height: 22px;
+}
+
+.fr-label-group .fr-label-title {
+  font-size: 18px;
+  color: #222;
+  margin: 0 0 12px;
 }
 
 .fr-label-required {
@@ -42,9 +68,9 @@
   margin: 0;
 }
 
-.fr-label-object .fr-label-title {
-  font-size: 16px;
-  color: #222;
+.fr-field-row .fr-content {
+  flex: 1;
+  position: relative;
 }
 
 .fr-desc {
@@ -65,16 +91,6 @@
 
 .fr-validate-row {
   margin: 3px 0 0 0;
-}
-
-.fr-label-row {
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.fr-field-row .fr-content {
-  flex: 1;
-  position: relative;
 }
 
 .fr-field-row .fr-tooltip-icon {

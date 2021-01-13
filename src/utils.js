@@ -107,7 +107,7 @@ export function flattenSchema(_schema = {}, name = '#', parent, result = {}) {
       children.push(uniqueName);
       flattenSchema(value, uniqueName, _name, result);
     });
-    delete schema.properties;
+    schema.properties = {};
   }
   if (isListType(schema)) {
     Object.entries(schema.items.properties).forEach(([key, value]) => {
@@ -771,7 +771,6 @@ const transformFrom = (mySchema, parent = null) => {
   const isList =
     mySchema.type === 'array' && mySchema.items && mySchema.items.properties;
   const hasChildren = isObj || isList;
-  // debugger;
   if (!hasChildren) {
     if (mySchema.enum && Array.isArray(mySchema.enum)) {
       const list = mySchema.enum;
@@ -834,7 +833,6 @@ const transformTo = (frSchema, parent = null, key = null) => {
   const isList =
     frSchema.type === 'array' && frSchema.items && frSchema.items.properties;
   const hasChildren = isObj || isList;
-  // debugger;
   if (!hasChildren) {
     if (
       frSchema.enum &&

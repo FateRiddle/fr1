@@ -1,12 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import { useStore } from '../../hooks';
-import {
-  isLooselyNumber,
-  isCssLength,
-  getParentProps,
-  getDataPath,
-  getValueByPath,
-} from '../../utils';
+import { getDataPath, getValueByPath, isObjType } from '../../utils';
 import { createWidget } from '../../HOC';
 import { getWidgetName, extraSchemaList } from '../../mapping';
 import { defaultWidgetNameList } from '../../widgets/antd';
@@ -19,6 +13,7 @@ const RenderField = ({
   dataIndex,
   item,
   labelClass,
+  labelStyle,
   contentClass,
   hasChildren,
   children,
@@ -28,16 +23,12 @@ const RenderField = ({
   const {
     onItemChange,
     onItemValidate,
-    flatten,
     formData,
     widgets,
     mapping,
     isValidating,
-    labelWidth,
     displayType,
   } = useStore();
-  const isObjType = true;
-  // const isObjType = schema.type === 'object'; //TODO: 补全 & 统一判断
   // 计算数据的真实路径，bind字段会影响
   let dataPath = getDataPath($id, dataIndex);
   // TODO: bind 允许bind数组，如果是bind数组，需要更多的处理
@@ -55,7 +46,6 @@ const RenderField = ({
   const errObj = errorFields.find(err => err.name === dataPath);
   const errList = errObj && errObj.error;
   const errorMessage = Array.isArray(errList) ? errList[0] : undefined;
-  errorMessage && console.log(errorMessage);
 
   useEffect(() => {
     if (isValidating) {
@@ -73,6 +63,8 @@ const RenderField = ({
 
   // 从全局 formData 获取 value
   const _value = getValue(dataPath, formData);
+
+  // TODO: 计算是哪个widget，需要优化
   let widgetName = getWidgetName(schema, mapping);
   const customWidget = schema['ui:widget'];
   if (customWidget && widgets[customWidget]) {
@@ -87,6 +79,17 @@ const RenderField = ({
     Widget = widgets[widgetName] || widgets['input'];
   }
 
+  // check: 由于是专门针对checkbox的，目前只好写这里
+  let _labelStyle = labelStyle;
+  if (widgetName === 'checkbox') {
+    _labelStyle = { flexGrow: 1 };
+  }
+
+  let contentStyle = {};
+  if (widgetName === 'checkbox' && displayType === 'row') {
+    contentStyle.marginLeft = labelStyle.width;
+  }
+
   // 使用useMemo，终于搞定了！如果这里不限制会每次都重复创建组件，不仅有性能问题，还会造成光标丢失
   const MyWidget = useMemo(
     () => createWidget(null, extraSchemaList[widgetName])(Widget),
@@ -96,21 +99,6 @@ const RenderField = ({
   // if (widgetName === 'multiSelect') {
   //   console.log(schema['ui:widget'], customWidget, Widget);
   // }
-  // 真正有效的label宽度需要从现在所在item开始一直往上回溯（设计成了继承关系），找到的第一个有值的 ui:labelWidth
-  const effectiveLabelWidth =
-    getParentProps('ui:labelWidth', $id, flatten) || labelWidth;
-  const _labelWidth = isLooselyNumber(effectiveLabelWidth)
-    ? Number(effectiveLabelWidth)
-    : isCssLength(effectiveLabelWidth)
-    ? effectiveLabelWidth
-    : 110; // 默认是 110px 的长度
-
-  let labelStyle = { width: _labelWidth };
-  if (widgetName === 'checkbox') {
-    labelStyle = { flexGrow: 1 };
-  } else if (isObjType || displayType !== 'column') {
-    labelStyle = { flexGrow: 1 };
-  }
 
   const singleValidation = (path, value, rules) => {
     if (Array.isArray(rules) && rules.length > 0) {
@@ -136,11 +124,6 @@ const RenderField = ({
     }
   };
 
-  let contentStyle = {};
-  if (widgetName === 'checkbox' && displayType === 'row') {
-    contentStyle.marginLeft = effectiveLabelWidth;
-  }
-
   const widgetProps = {
     schema,
     onChange,
@@ -157,14 +140,23 @@ const RenderField = ({
     widgetProps.onItemChange = onItemChange; // 只给外部组件提供，默认的组件都是简单组件，不需要，多余的props会warning，很烦
   }
 
-  const titleProps = { labelClass, labelStyle, widgetName, schema };
+  const titleProps = {
+    labelClass,
+    labelStyle: _labelStyle,
+    widgetName,
+    schema,
+  };
+
+  if (schema.title === '选择类') {
+    console.log(schema, isObjType(schema));
+  }
 
   return (
     <>
       {!!schema.title && <FieldTitle {...titleProps} />}
       <div className={contentClass} style={contentStyle}>
         {MyWidget && <MyWidget {...widgetProps} />}
-        <ErrorMessage message={errorMessage} />
+        {isObjType(schema) ? null : <ErrorMessage message={errorMessage} />}
       </div>
     </>
   );

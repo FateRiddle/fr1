@@ -47,7 +47,16 @@
     "percentage": {
       "title": "百分比",
       "type": "number",
-      "ui:widget": "percent"
+      "ui:widget": "percent",
+      "rules": [
+        {
+          "min": 10,
+          "message": "长度需要大于10"
+        },
+        {
+          "max": 80
+        }
+      ]
     },
     "AllString": {
       "title": "string类",
