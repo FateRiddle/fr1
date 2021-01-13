@@ -124,12 +124,27 @@ export const useForm = ({ schema, flatten }) => {
         return rule.message || `it is required`;
       }
       if (value === undefined || value === null) return;
+      // 按一个个rule来写比较快
       if (!Number.isNaN(Number(rule.min))) {
-        if (value.length <= rule.min) return rule.message || '太短';
+        switch (typeof value) {
+          case 'number':
+            if (value <= rule.min) return rule.message || '太短';
+          case 'string':
+            if (value.length <= rule.min) return rule.message || '太短';
+          default:
+            break;
+        }
         return;
       }
       if (!Number.isNaN(Number(rule.max))) {
-        if (value.length > rule.max) return rule.message || '太长';
+        switch (typeof value) {
+          case 'number':
+            if (value > rule.max) return rule.message || '太长';
+          case 'string':
+            if (value.length > rule.max) return rule.message || '太长';
+          default:
+            break;
+        }
         return;
       }
     }
@@ -241,7 +256,7 @@ function App({ widgets, mapping, form, onFinish, displayType, ...rest }) {
     flatten,
     widgets: { ...defaultWidgets, ...widgets },
     mapping: { ...defaultMapping, ...mapping },
-    displayType: displayType || 'row',
+    displayType: displayType || 'column',
     ...rest,
   };
 
