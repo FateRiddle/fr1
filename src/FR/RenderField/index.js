@@ -1,6 +1,11 @@
 import React, { useMemo, useEffect } from 'react';
 import { useStore } from '../../hooks';
-import { getDataPath, getValueByPath, isObjType } from '../../utils';
+import {
+  getDataPath,
+  getValueByPath,
+  isCheckBoxType,
+  isObjType,
+} from '../../utils';
 import { createWidget } from '../../HOC';
 import { getWidgetName, extraSchemaList } from '../../mapping';
 import { defaultWidgetNameList } from '../../widgets/antd';
@@ -18,6 +23,8 @@ const RenderField = ({
   hasChildren,
   children,
   errorFields = [],
+  hideTitle,
+  hideValidation,
 }) => {
   const { schema } = item;
   const {
@@ -147,16 +154,35 @@ const RenderField = ({
     schema,
   };
 
-  if (schema.title === '选择类') {
-    console.log(schema, isObjType(schema));
+  const placeholderTitleProps = {
+    className: labelClass,
+    style: _labelStyle,
+  };
+
+  const _showTitle = !hideTitle && !!schema.title;
+
+  const _hideValidation =
+    isObjType(schema) || (hideValidation && !errorMessage);
+
+  // checkbox必须单独处理，布局太不同了
+  if (isCheckBoxType(schema)) {
+    return (
+      <>
+        {_showTitle && <div {...placeholderTitleProps} />}
+        <div className={contentClass} style={contentStyle}>
+          {MyWidget && <MyWidget {...widgetProps}>{schema.title}</MyWidget>}
+          {_hideValidation ? null : <ErrorMessage message={errorMessage} />}
+        </div>
+      </>
+    );
   }
 
   return (
     <>
-      {!!schema.title && <FieldTitle {...titleProps} />}
+      {_showTitle && <FieldTitle {...titleProps} />}
       <div className={contentClass} style={contentStyle}>
         {MyWidget && <MyWidget {...widgetProps} />}
-        {isObjType(schema) ? null : <ErrorMessage message={errorMessage} />}
+        {_hideValidation ? null : <ErrorMessage message={errorMessage} />}
       </div>
     </>
   );

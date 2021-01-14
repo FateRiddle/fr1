@@ -25,6 +25,12 @@ window.plog = value => {
   console.log('%cspecial:', 'color: #722ed1; font-weight: 500;', value);
 };
 
+export function isCheckBoxType(schema) {
+  return (
+    schema && schema.type === 'boolean' && schema['ui:widget'] !== 'switch'
+  ); // TODO: 感觉有点不准
+}
+
 function removeBrackets(string) {
   if (typeof string === 'string') {
     return string.replace(/\[\]/g, '');
@@ -116,7 +122,7 @@ export function flattenSchema(_schema = {}, name = '#', parent, result = {}) {
       children.push(uniqueName);
       flattenSchema(value, uniqueName, _name, result);
     });
-    delete schema.items.properties;
+    // delete schema.items.properties; // TODO: 这个拼回去会有问题吧。。。先观察
   }
 
   const rules = Array.isArray(schema.rules) ? [...schema.rules] : [];

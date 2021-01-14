@@ -129,7 +129,6 @@
           "title": "是否通过",
           "type": "boolean",
           "valuePropName": "checked",
-          "ui:disabled": true,
           "default": true
         },
         "switch": {

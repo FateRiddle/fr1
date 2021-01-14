@@ -1,5 +1,6 @@
 import React from 'react';
-import { RenderList, RenderObject } from './RenderChildren';
+import RenderList from './RenderChildren/RenderList';
+import RenderObject from './RenderChildren/RenderObject';
 import RenderField from './RenderField';
 import { useStore } from '../hooks';
 import {
@@ -7,16 +8,19 @@ import {
   isCssLength,
   getParentProps,
   isListType,
+  isCheckBoxType,
 } from '../utils';
 
-const FR = ({ id = '#', dataIndex = [] }) => {
-  const {
-    displayType = 'row',
-    column,
-    flatten,
-    errorFields,
-    labelWidth,
-  } = useStore();
+// rest: 允许在每层FR重新定义全局props，覆盖
+const FR = ({
+  id = '#',
+  dataIndex = [],
+  hideTitle = false,
+  hideValidation = false,
+  ...rest
+}) => {
+  const { displayType, column, flatten, errorFields, labelWidth } = useStore();
+  const _displayType = rest.displayType || displayType || 'column';
   const item = flatten[id];
   if (!item) return null;
 
@@ -24,10 +28,11 @@ const FR = ({ id = '#', dataIndex = [] }) => {
   const isObjType = schema.type === 'object'; // TODO: 这个好像太笼统了，万一不是这样呢
   const isList = isListType(schema);
   const isComplex = isObjType || isList;
-  const isCheckBox =
-    schema.type === 'boolean' && schema['ui:widget'] !== 'switch'; // TODO: 感觉有点不准
+  const isCheckBox = isCheckBoxType(schema);
   const width = schema['ui:width'];
-  let containerClass = `fr-field w-100 flex`;
+  let containerClass = `fr-field ${
+    _displayType === 'inline' ? '' : 'w-100'
+  } flex`;
   let labelClass = `fr-label`;
   let contentClass = `fr-content`;
   // common classNames dispite row or column
@@ -50,20 +55,18 @@ const FR = ({ id = '#', dataIndex = [] }) => {
       }
       break;
     case 'boolean':
-      if (schema['ui:widget'] !== 'switch') {
-        if (schema.title) {
-          labelClass += ' ml2';
-          labelClass = labelClass.replace('mb2', 'mb0');
-        }
-        contentClass += ' flex items-center'; // checkbox高度短，需要居中对齐
-        containerClass += ' flex items-center flex-row-reverse justify-end';
+      if (isCheckBox) {
+        contentClass += ' fr-content-column'; // checkbox高度短，需要居中对齐
+        containerClass += ` flex ${
+          _displayType === 'column' ? 'flex-column' : ''
+        }`;
       }
       break;
     default:
   }
   // column specific className
-  if (!isComplex) {
-    if (displayType === 'column') {
+  if (!isComplex && !isCheckBox) {
+    if (_displayType === 'column') {
       containerClass += ' flex-column';
       labelClass += ' fr-label-column';
       contentClass += ' fr-content-column';
@@ -76,18 +79,10 @@ const FR = ({ id = '#', dataIndex = [] }) => {
           }
           break;
         case 'boolean':
-          if (schema['ui:widget'] !== 'switch') {
-            if (schema.title) {
-              labelClass += ' ml2';
-              labelClass = labelClass.replace('mb2', 'mb0');
-            }
-            contentClass += ' flex items-center'; // checkbox高度短，需要居中对齐
-            containerClass += ' flex items-center flex-row-reverse justify-end';
-          }
           break;
         default:
       }
-    } else if (displayType === 'row') {
+    } else if (_displayType === 'row') {
       // row specific className
       containerClass += '';
       labelClass += ' fr-label-row';
@@ -95,10 +90,6 @@ const FR = ({ id = '#', dataIndex = [] }) => {
       if (!isObjType && !isCheckBox) {
         labelClass += ' flex-shrink-0 fr-label-row';
         contentClass += ' flex-grow-1 relative';
-      }
-      // 横排的checkbox
-      if (isCheckBox) {
-        contentClass += ' flex justify-end pr2';
       }
     }
   }
@@ -129,7 +120,7 @@ const FR = ({ id = '#', dataIndex = [] }) => {
     : 110; // 默认是 110px 的长度
 
   let labelStyle = { width: _labelWidth };
-  if (isComplex || displayType === 'column') {
+  if (isComplex || _displayType === 'column') {
     labelStyle = { flexGrow: 1 };
   }
 
@@ -144,6 +135,9 @@ const FR = ({ id = '#', dataIndex = [] }) => {
     contentClass,
     errorFields,
     hasChildren,
+    // 层级间可使用的字段
+    hideTitle,
+    hideValidation,
   };
 
   const objChildren = hasChildren ? (
@@ -153,11 +147,9 @@ const FR = ({ id = '#', dataIndex = [] }) => {
   ) : null;
 
   const listChildren = hasChildren ? (
-    <ul className={`flex flex-wrap pl0`}>
-      <RenderList parentId={id} dataIndex={dataIndex}>
-        {item.children}
-      </RenderList>
-    </ul>
+    <RenderList parentId={id} dataIndex={dataIndex}>
+      {item.children}
+    </RenderList>
   ) : null;
 
   // TODO: list 也要算进去
