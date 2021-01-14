@@ -318,19 +318,15 @@ export const evaluateString = (string, formData, rootValue) =>
 
 // 判断schema的值是是否是“函数”
 // JSON无法使用函数值的参数，所以使用"{{...}}"来标记为函数，也可使用@标记，不推荐。
-export function isFunction(func) {
+export function isExpression(func) {
   if (typeof func === 'function') {
     return true;
   }
-  if (typeof func === 'string' && func.substring(0, 1) === '@') {
-    return func.substring(1);
-  }
-  if (
-    typeof func === 'string' &&
-    func.substring(0, 2) === '{{' &&
-    func.substring(func.length - 2, func.length) === '}}'
-  ) {
-    return func.substring(2, func.length - 2);
+  // 这样的pattern {{.....}}
+  const pattern = /^({{){1}.+(}}){1}$/g;
+  if (typeof func === 'string' && func.match(pattern)) {
+    return true;
+    // return func.substring(2, func.length - 2);
   }
   return false;
 }
@@ -341,7 +337,7 @@ export function isFunctionSchema(schema) {
     if (typeof schema[key] === 'function') {
       return true;
     } else if (typeof schema[key] === 'string') {
-      return isFunction(schema[key]);
+      return isExpression(schema[key]);
     } else if (typeof schema[key] === 'object') {
       return isFunctionSchema(schema[key]);
     } else {
