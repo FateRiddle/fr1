@@ -32,7 +32,7 @@ export const useForm = ({ schema, flatten }) => {
 
   useEffect(() => {
     setState({ _flatten: flatten || flattenSchema(schema) });
-  }, [flatten, schema]);
+  }, [flatten, schema, formData]);
 
   // const setTouched = (path, value) => {
   //   if (path === '#') return;
@@ -57,11 +57,11 @@ export const useForm = ({ schema, flatten }) => {
   const onItemChange = (path, value) => {
     if (typeof path !== 'string') return;
     if (path === '#') {
-      setState({ formData: value });
+      setState({ formData: { ...value } });
       return;
     }
     const newFormData = set(formData, path, value);
-    setState({ formData: newFormData });
+    setState({ formData: { ...newFormData } });
   };
 
   // TODO: 全局的没有path, 这个函数要这么写么。。全局的，可以path = #
@@ -249,6 +249,7 @@ function App({ widgets, mapping, form, onFinish, displayType, ...rest }) {
     isSubmitting,
     isValidating,
     endSubmitting,
+    formData,
   } = form;
   // window.blog(flatten, form.formData);
   const store = {
@@ -259,6 +260,11 @@ function App({ widgets, mapping, form, onFinish, displayType, ...rest }) {
     displayType: displayType || 'column',
     ...rest,
   };
+
+  console.log(formData, 'formData');
+  useEffect(() => {
+    // side effects
+  }, [formData]);
 
   useEffect(() => {
     if (!isValidating && isSubmitting) {
