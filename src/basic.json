@@ -71,7 +71,7 @@
           "ui:options": {
             "placeholder": "haha"
           },
-          "required": true
+          "required": "{{rootValue.d === '1'}}"
         },
         "textarea": {
           "bind": "a.b.d",

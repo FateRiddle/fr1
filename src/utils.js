@@ -137,8 +137,8 @@ export function flattenSchema(_schema = {}, name = '#', parent, result = {}) {
   }
 
   const rules = Array.isArray(schema.rules) ? [...schema.rules] : [];
-  if (schema.required === true) {
-    rules.push({ required: true }); // TODO: 万一内部已经用重复的required规则？
+  if (['boolean', 'function', 'string'].indexOf(typeof schema.required) > -1) {
+    rules.push({ required: schema.required }); // TODO: 万一内部已经用重复的required规则？
   }
 
   if (schema.type) {
@@ -333,8 +333,8 @@ export function isExpression(func) {
   if (typeof func === 'function') {
     const funcString = func.toString();
     return (
-      funcString.indexOf('formData') > -1
-      // || funcString.indexOf('rootValue') > -1 // Check: 这个旧版兼容，值得么
+      funcString.indexOf('formData') > -1 ||
+      funcString.indexOf('rootValue') > -1 // Check: 这个旧版兼容，值得么
     );
   }
   // 这样的pattern {{.....}}

@@ -7,6 +7,8 @@ import {
   isObjType,
   schemaContainsExpression,
   parseAllExpression,
+  parseSingleExpression,
+  isExpression,
 } from '../../utils';
 import { createWidget } from '../../HOC';
 import { getWidgetName, extraSchemaList } from '../../mapping';
@@ -54,10 +56,26 @@ const RenderField = ({
   }
 
   // 解析schema
-  let schema = _schema;
+  let schema = { ..._schema }; // TODO: 这儿用 _ 用的不太统一，就是懒
   if (schemaContainsExpression(schema)) {
     schema = parseAllExpression(_schema, formData, dataPath);
   }
+
+  console.log(item.rules, 'rules');
+
+  let _rules = [...item.rules];
+  _rules = _rules.map(rule => {
+    // if (rule.required) debugger;
+    const newRule = {};
+    Object.keys(rule).forEach(key => {
+      const needParse = isExpression(rule[key]);
+      console.log(rule, needParse);
+      newRule[key] = needParse
+        ? parseSingleExpression(rule[key], formData, dataPath)
+        : rule[key];
+    });
+    return newRule;
+  });
 
   const errObj = errorFields.find(err => err.name === dataPath);
   const errList = errObj && errObj.error;
@@ -128,13 +146,13 @@ const RenderField = ({
       if (Array.isArray(value)) {
         dataPath.forEach((p, idx) => {
           if (value[idx] === null) return; // TODO: 为了允许onChange只改部分值，如果传null就不改。想一想会不会有确实需要改值为null的可能？
-          singleValidation(p, value[idx], item.rules);
+          singleValidation(p, value[idx], _rules);
           !justValidate && onItemChange(p, value[idx]);
           // !justValidate && setTouched(p, true);
         });
       }
     } else if (typeof dataPath === 'string') {
-      singleValidation(dataPath, value, item.rules);
+      singleValidation(dataPath, value, _rules);
       !justValidate && onItemChange(dataPath, value);
       // !justValidate && setTouched(dataPath, true);
     }
