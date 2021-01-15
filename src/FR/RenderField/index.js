@@ -5,6 +5,8 @@ import {
   getValueByPath,
   isCheckBoxType,
   isObjType,
+  schemaContainsExpression,
+  parseAllExpression,
 } from '../../utils';
 import { createWidget } from '../../HOC';
 import { getWidgetName, extraSchemaList } from '../../mapping';
@@ -26,7 +28,7 @@ const RenderField = ({
   hideTitle,
   hideValidation,
 }) => {
-  const { schema } = item;
+  const { schema: _schema } = item;
   const {
     onItemChange,
     onItemValidate,
@@ -36,18 +38,25 @@ const RenderField = ({
     isValidating,
     displayType,
   } = useStore();
+
   // 计算数据的真实路径，bind字段会影响
   let dataPath = getDataPath($id, dataIndex);
   // TODO: bind 允许bind数组，如果是bind数组，需要更多的处理
   const isMultiPaths =
-    Array.isArray(schema.bind) &&
-    schema.bind.every(item => typeof item === 'string');
-  if (schema && schema.bind) {
-    if (typeof schema.bind === 'string') {
-      dataPath = getDataPath(schema.bind, dataIndex);
+    Array.isArray(_schema.bind) &&
+    _schema.bind.every(item => typeof item === 'string');
+  if (_schema && _schema.bind) {
+    if (typeof _schema.bind === 'string') {
+      dataPath = getDataPath(_schema.bind, dataIndex);
     } else if (isMultiPaths) {
-      dataPath = schema.bind.map(b => getDataPath(b, dataIndex));
+      dataPath = _schema.bind.map(b => getDataPath(b, dataIndex));
     }
+  }
+
+  // 解析schema
+  let schema = _schema;
+  if (schemaContainsExpression(schema)) {
+    schema = parseAllExpression(_schema, formData, dataPath);
   }
 
   const errObj = errorFields.find(err => err.name === dataPath);
