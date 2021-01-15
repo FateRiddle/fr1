@@ -8,14 +8,6 @@ import { Button, Table } from 'antd';
 const RenderList = ({ parentId, dataIndex = [], children = [] }) => {
   const { formData, onItemChange, flatten } = useStore();
 
-  //
-  let childrenSchema = {};
-  try {
-    childrenSchema = flatten[parentId].schema.items.properties;
-  } catch (error) {
-    console.error("can't find children schema");
-  }
-
   // 计算 list对应的formData
   const dataPath = getDataPath(parentId, dataIndex);
   let listData;
@@ -25,11 +17,9 @@ const RenderList = ({ parentId, dataIndex = [], children = [] }) => {
   }
 
   const displayList = Array.isArray(listData) ? listData : [undefined];
-  console.log('listData', displayList);
 
   const addItem = () => {
     const newList = [...displayList, undefined];
-    console.log(newList);
     onItemChange(dataPath, newList);
   };
 
@@ -37,7 +27,6 @@ const RenderList = ({ parentId, dataIndex = [], children = [] }) => {
     // TODO: 删除元素的时候，也需要delete相对于的校验信息（errorFields）
     // remark: 删除时，不存在的item需要补齐，用null
     const newList = displayList.filter((item, kdx) => kdx !== idx);
-    console.log(newList, 'newList');
     onItemChange(dataPath, newList);
   };
 
@@ -48,7 +37,6 @@ const RenderList = ({ parentId, dataIndex = [], children = [] }) => {
     deleteItem,
     addItem,
     listData,
-    childrenSchema,
     flatten,
   };
 

@@ -13,6 +13,13 @@
 - [ ] readOnly
 - [ ] list 和 bind 还是不能共用
 - [ ] 其他 form.方法，resetFields、submit 等待，目前就一个 getValues
+- [ ] 如果 list 对应的是['a','b']这样非 object 的数据咋办
+- [ ] list 的 pagination 点击页码要有效
+- [ ] list 相关的校验问题：display 了一个值，一点没动还是会被校验。。list 的校验 delete 的时候没有删掉
+
+Low priority ones
+
+- [ ] 比如 percentage 组件，动过之后就不会变成 undefined 了，所以如果有校验就会不过（这个情况在正式场景会有问题不？）
 
 ## 功能
 
@@ -34,11 +41,17 @@
 16. UI 更新
 17. 字段支持表达式
 
+UI 是否框要单独处理
+default 值的实现
+新建字段 showTitle => 改成 hideTitle，字段的常用行为应该默认是 false
+新建字段 hideValidation 意思是没有出现校验文案的时候，不展示校验的块
+
 ### submit
 
 1. bind: false 这个需要在 submit 逻辑里取做
 2. list 数据的补齐，因为用的 lodash 的 set，其他值可能完全空着
 3. bind 的逻辑，是否考虑动态添加了 bind，要把原字段去掉？就像 hidden 是否要考虑这个问题 (这个在 submit 里去做)
+4. list 里面空的窟窿，去掉，如果整个没有值，list 整个去掉
 
 ### 提供操纵全局的函数（？这块写了一半）
 

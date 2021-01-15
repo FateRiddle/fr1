@@ -5,7 +5,8 @@
       "title": "日期范围",
       "bind": ["startDate", "endDate"],
       "type": "range",
-      "format": "date"
+      "format": "date",
+      "ui:disabled": "{{rootValue.a.b.c === '1'}}"
     },
     "list": {
       "title": "对象数组",
@@ -66,13 +67,14 @@
           "title": "简单输入框",
           "bind": "a.b.c",
           "type": "string",
+          "ui:disabled": "{{rootValue.d === '1'}}",
           "ui:options": {
-            "placeholder": "昵称"
+            "placeholder": "haha"
           },
           "required": true
         },
         "textarea": {
-          "bind": false,
+          "bind": "a.b.d",
           "title": "简单文本编辑框",
           "type": "string",
           "format": "textarea"
@@ -89,6 +91,7 @@
           "format": "date"
         },
         "image": {
+          "bind": false,
           "title": "图片展示",
           "type": "string",
           "format": "image"
@@ -128,7 +131,6 @@
         "radio": {
           "title": "是否通过",
           "type": "boolean",
-          "valuePropName": "checked",
           "default": true
         },
         "switch": {

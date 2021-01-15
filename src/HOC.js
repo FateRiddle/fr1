@@ -25,12 +25,12 @@ export const createWidget = (mapProps, extraSchema) => Component => props => {
 
   // TODO: 之后 ui:xx 会舍去
   const usedPropsFromSchema = {
-    disabled: schema['ui:disabled'],
-    readOnly: schema['ui:readonly'],
-    hidden: schema['ui:hidden'],
-    options: schema['ui:options'],
+    disabled: schema.disabled || schema['ui:disabled'],
+    readOnly: schema.readOnly || schema['ui:readonly'],
+    hidden: schema.hidden || schema['ui:hidden'],
+    options: schema.options || schema['ui:options'],
     // labelWidth: schema['ui:labelWidth'],
-    width: schema['ui:width'],
+    width: schema.width || schema['ui:width'],
   };
 
   const propsMap = typeof mapProps === 'function' ? mapProps(props) : {};
