@@ -36,7 +36,7 @@ const Demo = () => {
     <div>
       <button onClick={form.submit}>提交</button>
       <div style={{ height: 40 }}>{JSON.stringify(display[0])}</div>
-      <div style={{ height: 40 }}>{JSON.stringify(display[1])}</div>
+      <div style={{ minHeight: 40 }}>{JSON.stringify(display[1])}</div>
       <div style={{ padding: 24 }}>
         <FormRender
           form={form}

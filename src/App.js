@@ -16,6 +16,7 @@ export const useForm = ({ schema, flatten }) => {
     errorFields: [],
     isValidating: false,
     isSubmitting: false,
+    isEditing: false, // 是否在编辑状态。主要用于优化体验，用户编辑时减少不必要的运算
     _flatten: {},
     // statusTree: {}, // 目前就放 touched, 这个太多了，用errorFields的展示不合适，还是维持formData的展示
   });
@@ -26,6 +27,7 @@ export const useForm = ({ schema, flatten }) => {
     errorFields,
     isValidating,
     isSubmitting,
+    isEditing,
     _flatten, // schema 在内部通用转换成 flatten，一般就一次转换。schema便于书写，flatten便于数据处理
     // statusTree, // 和formData一个结构，但是每个元素是 { $touched } 存放那些在schema里无需表达的状态, 看看是否只有touched。目前statusTree没有被使用
   } = state;
@@ -53,6 +55,10 @@ export const useForm = ({ schema, flatten }) => {
   //     return;
   //   }
   // };
+
+  const setEditing = isEditing => {
+    setState({ isEditing });
+  };
 
   const onItemChange = (path, value) => {
     if (typeof path !== 'string') return;
@@ -237,6 +243,8 @@ export const useForm = ({ schema, flatten }) => {
     isValidating,
     endSubmitting,
     onItemValidate,
+    isEditing,
+    setEditing,
   };
   return form;
 };
@@ -261,7 +269,6 @@ function App({ widgets, mapping, form, onFinish, displayType, ...rest }) {
     ...rest,
   };
 
-  console.log(formData, 'formData');
   useEffect(() => {
     // side effects
   }, [formData]);
@@ -278,6 +285,7 @@ function App({ widgets, mapping, form, onFinish, displayType, ...rest }) {
   return (
     <StoreCtx.Provider value={store}>
       <Ctx.Provider value={{}}>
+        <div>{JSON.stringify(form.isEditing)}</div>
         <div className="fr-wrapper">
           <FR />
         </div>
