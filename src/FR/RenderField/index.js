@@ -10,6 +10,7 @@ import {
   parseAllExpression,
   parseSingleExpression,
   isExpression,
+  isObject,
 } from '../../utils';
 import { createWidget } from '../../HOC';
 import { getWidgetName, extraSchemaList } from '../../mapping';
@@ -42,6 +43,7 @@ const RenderField = ({
     displayType,
     isEditing,
     setEditing,
+    watch,
   } = useStore();
 
   const [snapShot, setSnapShot] = useState(() => schema);
@@ -64,7 +66,7 @@ const RenderField = ({
   let _schema = { ...schema }; // TODO: 这儿用 _ 用的不太统一，就是懒
   let _rules = [...item.rules];
 
-  // 节流部分逻辑，编辑时不执行
+  // 节流部分逻辑，编辑时不执行  /////////////////////////////////////////////////////
   if (!isEditing) {
     if (schemaContainsExpression(_schema)) {
       _schema = parseAllExpression(_schema, formData, dataPath);
@@ -91,9 +93,12 @@ const RenderField = ({
 
   _schema = isEditing ? snapShot : _schema;
 
+  ////////////////////////////////////////////////////////////////////////////
+
   const errObj = errorFields.find(err => err.name === dataPath);
   const errList = errObj && errObj.error;
   const errorMessage = Array.isArray(errList) ? errList[0] : undefined;
+  // console.log(errorFields, errorMessage, dataPath);
 
   useEffect(() => {
     if (isValidating) {
@@ -157,6 +162,9 @@ const RenderField = ({
     // 开始编辑，节流
     setEditing(true);
     debouncedSetEditing.callback(false);
+    if (isObject(watch) && typeof watch[dataPath] === 'function') {
+      watch[dataPath](value);
+    }
     if (isMultiPaths) {
       if (Array.isArray(value)) {
         dataPath.forEach((p, idx) => {

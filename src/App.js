@@ -4,14 +4,13 @@ import FR from './FR';
 import { Ctx, StoreCtx, useSet } from './hooks';
 import { widgets as defaultWidgets } from './widgets/antd';
 import { mapping as defaultMapping } from './mapping';
-import { set, unset } from 'lodash';
+import { set, unset, sortedUniqBy } from 'lodash';
 import 'tachyons';
 import './index.css';
 
 export const useForm = ({ schema, flatten }) => {
   const [state, setState] = useSet({
     formData: {}, // TODO: 初始值从外部传入
-    watchConfig: {}, // 所有全局的watch，类似vue
     submitData: {},
     errorFields: [],
     isValidating: false,
@@ -22,7 +21,6 @@ export const useForm = ({ schema, flatten }) => {
   });
   const {
     formData,
-    watchConfig,
     submitData,
     errorFields,
     isValidating,
@@ -122,6 +120,47 @@ export const useForm = ({ schema, flatten }) => {
     });
   };
 
+  // TODO: 外部校验的error要和本地的合并么？
+  const setErrorFields = error => {
+    setState(({ errorFields }) => {
+      let newErrorFields = [];
+      if (Array.isArray(error)) {
+        newErrorFields = [...error, ...errorFields];
+      } else if (error && error.name) {
+        newErrorFields = [error, ...errorFields];
+      } else {
+        console.log('error format is wrong');
+      }
+      newErrorFields = sortedUniqBy(newErrorFields, item => item.name);
+      console.log('newErrorFields', newErrorFields);
+      return { errorFields: newErrorFields };
+    });
+  };
+
+  const removeValidation = _path => {
+    if (!_path || _path === '#') {
+      setState({ errorFields: [] });
+    }
+    let path;
+    if (typeof _path === 'string') {
+      path = _path;
+    } else if (Array.isArray(_path) && typeof _path[0] === 'string') {
+      path = _path[0];
+    } else {
+      // 说明有传参有问题，直接结束 TODO: 后续可给个提示
+      return;
+    }
+
+    setState(({ errorFields }) => {
+      let newErrorFields = errorFields.filter(
+        item => item.name.indexOf(path) === -1
+      );
+      return {
+        errorFields: newErrorFields,
+      };
+    });
+  };
+
   // TODO: 提取出来，重新写一份，注意要处理async
   const validateSingleRule = (rule, value) => {
     if (isObject(rule)) {
@@ -157,8 +196,6 @@ export const useForm = ({ schema, flatten }) => {
   };
 
   const getValues = () => formData;
-
-  const watch = watchConfig => setState({ watchConfig });
 
   const submit = () => {
     setState({ isValidating: true, isSubmitting: true });
@@ -229,13 +266,11 @@ export const useForm = ({ schema, flatten }) => {
     formData,
     schema,
     flatten: _flatten,
-    watchConfig,
     // methods
     onItemChange,
     setValue,
     getValues,
     resetFields,
-    watch,
     submit,
     submitData,
     errorFields,
@@ -243,13 +278,25 @@ export const useForm = ({ schema, flatten }) => {
     isValidating,
     endSubmitting,
     onItemValidate,
+    setErrorFields,
+    removeValidation,
     isEditing,
     setEditing,
   };
   return form;
 };
 
-function App({ widgets, mapping, form, onFinish, displayType, ...rest }) {
+// 其他入参 watch: {"a.b.c": (value) => { ... }, }
+
+function App({
+  widgets,
+  mapping,
+  form,
+  beforeFinish,
+  onFinish,
+  displayType,
+  ...rest
+}) {
   const {
     flatten,
     submitData,
@@ -275,9 +322,17 @@ function App({ widgets, mapping, form, onFinish, displayType, ...rest }) {
 
   useEffect(() => {
     if (!isValidating && isSubmitting) {
-      Promise.resolve(onFinish({ formData: submitData, errorFields })).then(
-        endSubmitting
-      );
+      if (beforeFinish && typeof beforeFinish === 'function') {
+        Promise.resolve(beforeFinish({ formData: submitData, errorFields }))
+          .then(_ =>
+            Promise.resolve(onFinish({ formData: submitData, errorFields }))
+          )
+          .then(endSubmitting);
+      } else {
+        Promise.resolve(onFinish({ formData: submitData, errorFields })).then(
+          endSubmitting
+        );
+      }
     }
   }, [isValidating, isSubmitting]);
 

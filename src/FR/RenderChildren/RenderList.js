@@ -6,7 +6,7 @@ import { getDataPath } from '../../utils';
 import { Button, Table } from 'antd';
 
 const RenderList = ({ parentId, dataIndex = [], children = [] }) => {
-  const { formData, onItemChange, flatten } = useStore();
+  const { formData, onItemChange, removeValidation, flatten } = useStore();
 
   // 计算 list对应的formData
   const dataPath = getDataPath(parentId, dataIndex);
@@ -28,6 +28,8 @@ const RenderList = ({ parentId, dataIndex = [], children = [] }) => {
     // remark: 删除时，不存在的item需要补齐，用null
     const newList = displayList.filter((item, kdx) => kdx !== idx);
     onItemChange(dataPath, newList);
+    // const itemPath = dataPath + `[${idx}]`; //TODO: 这块有问题啊，idx好像不准
+    removeValidation(dataPath);
   };
 
   const displayProps = {

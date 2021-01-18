@@ -383,7 +383,6 @@ export function parseSingleExpression(func, formData, _dataPath) {
       .replace(match1, v => JSON.stringify(parser(v)))
       .replace(match2, v => JSON.stringify(parser2(v)))})`;
     const e = Function(str)();
-    console.log('expression', str, e);
     return Function(str)();
   } else return undefined;
 }

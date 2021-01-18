@@ -6,6 +6,8 @@ import FormRender, { useForm, createWidget } from './App';
 import schema from './basic.json';
 import Percent from './otherWidgets/Percent';
 
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
 // const Demo = () => {
 //   const form = useForm()
 //   return <App form={form} schema={schema} />;
@@ -31,6 +33,25 @@ const Demo = () => {
     setDisplay([formData, errorFields]);
   };
 
+  const outsideValidation = () => {
+    form.setErrorFields({ name: 'percentage', error: ['外部校验错误'] });
+  };
+
+  const beforeFinish = () => {
+    return delay(0).then(_ =>
+      form.setErrorFields({ name: 'percentage', error: ['外部校验错误'] })
+    );
+  };
+
+  const watch = {
+    'a.b.c': value => {
+      form.onItemChange('a.b.d', value);
+    },
+    percentage: value => {
+      form.onItemChange('a.b.c', String(value));
+    },
+  };
+
   // TODO: form 不传入，也可以用，至少可以展示
   return (
     <div>
@@ -38,8 +59,11 @@ const Demo = () => {
       <div style={{ height: 40 }}>{JSON.stringify(display[0])}</div>
       <div style={{ minHeight: 40 }}>{JSON.stringify(display[1])}</div>
       <div style={{ padding: 24 }}>
+        <button onClick={outsideValidation}>外部校验传入</button>
         <FormRender
+          watch={watch}
           form={form}
+          beforeFinish={beforeFinish}
           onFinish={onFinish}
           widgets={{ percent: PercentWidget }}
           displayType="column"
