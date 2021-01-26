@@ -5,6 +5,8 @@ import { useStore } from '../../hooks';
 import { getDataPath } from '../../utils';
 import { Button, Table } from 'antd';
 
+const FIELD_LENGTH = 200;
+
 const RenderList = ({ parentId, dataIndex = [], children = [] }) => {
   const { formData, onItemChange, removeValidation, flatten } = useStore();
 
@@ -65,6 +67,7 @@ const TableList = ({
     return {
       dataIndex: child,
       title: schema.title,
+      width: FIELD_LENGTH,
       render: (value, record, index) => {
         // Check: record.index 似乎是antd自己会给的，不错哦
         const childIndex = [...dataIndex, record.index];
@@ -84,6 +87,8 @@ const TableList = ({
   columns.push({
     title: '操作',
     key: '$action',
+    fixed: 'right',
+    width: 120,
     render: (value, record, index) => {
       return <a onClick={() => deleteItem(index)}>删除</a>;
     },
@@ -101,6 +106,7 @@ const TableList = ({
         dataSource={dataSource}
         rowKey="index"
         size="small"
+        scroll={{ x: children.length * FIELD_LENGTH }}
         pagination={{ size: 'small', hideOnSinglePage: true }}
       />
     </>
