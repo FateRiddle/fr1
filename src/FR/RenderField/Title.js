@@ -1,7 +1,8 @@
 import React from 'react';
 import { useStore } from '../../hooks';
+import { isCheckBoxType } from '../../utils'
 
-const Title = ({ labelClass, labelStyle, widgetName, schema }) => {
+const Title = ({ labelClass, labelStyle, schema }) => {
   const { showDescIcon, displayType } = useStore();
   const { title, description, required, type } = schema;
   const isObjType = type === 'object';
@@ -10,13 +11,13 @@ const Title = ({ labelClass, labelStyle, widgetName, schema }) => {
     <div className={labelClass} style={labelStyle}>
       <label
         className={`fr-label-title ${
-          widgetName === 'checkbox' || displayType === 'column'
+          isCheckBoxType(schema) || displayType === 'column'
             ? 'no-colon'
             : ''
         }`} // checkbox不带冒号
         title={title}
       >
-        {required && <span className="fr-label-required"> *</span>}
+        {required === true && <span className="fr-label-required"> *</span>}
         <span
           className={`${isObjType ? 'b' : ''} ${
             displayType === 'column' ? 'flex-none' : ''
