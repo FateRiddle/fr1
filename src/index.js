@@ -5,6 +5,10 @@ import 'antd/dist/antd.css';
 import FormRender, { useForm, createWidget } from './App';
 import schema from './basic.json';
 import Percent from './otherWidgets/Percent';
+// import schema1 from './basic1.json';
+// import { combineSchema } from './utils';
+
+// console.log(JSON.stringify(combineSchema(schema1.schema, schema1.uiSchema)));
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
@@ -52,6 +56,30 @@ const Demo = () => {
     },
   };
 
+  const extend = {
+    'a.b.c': ({ schema }) => {
+      return {
+        placeholder: 'hahahah' + schema.placeholder,
+      };
+    },
+    'allEnum.select': () => {
+      const options = [];
+      for (let i = 10; i < 36; i++) {
+        const value = i.toString(36) + i;
+        options.push({
+          label: `Long Label: ${value}`,
+          value,
+        });
+      }
+      return { options };
+      // return delay(1000).then(res => {
+      //   return {
+      //     options,
+      //   };
+      // });
+    },
+  };
+
   // TODO: form 不传入，也可以用，至少可以展示
   return (
     <div>
@@ -62,6 +90,7 @@ const Demo = () => {
         <button onClick={outsideValidation}>外部校验传入</button>
         <FormRender
           watch={watch}
+          extend={extend}
           form={form}
           beforeFinish={beforeFinish}
           onFinish={onFinish}
