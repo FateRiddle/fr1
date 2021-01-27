@@ -1,5 +1,19 @@
 ## TODO
 
+must
+
+- [ ] isEditing 应该只有 input 框才触发
+- [ ] 处理 checked 没有转换
+
+- [ ] 只读模式 readOnly
+- [ ] 敲定最外层的 api
+- [ ] 全局的 watch
+- [ ] 全局的 extend
+- [ ] validation 整个的细节实现
+- [ ] default/disabled 等 （default 的展示，比如 checkbox 的字段是 defaultChecked）
+- [ ] 对使用 ui:options 继续兼容
+- [ ] form 的方法全部补齐
+
 - [ ] validationTrigger
 - [ ] schema 服务端下发，确保代码还是 ok（就是初始 schema 为空）
 - [ ] schema 服务端下发，做好校验和第一层的报错
@@ -9,13 +23,15 @@
 - [ ] slot 的支持
 - [ ] default 的展示，比如 checkbox 的字段是 defaultChecked
 - [ ] 已有的 widget 的 valuePropsName 和 trigger 的 mapping 补齐
-- [ ] 校验
 - [ ] readOnly
 - [ ] list 和 bind 还是不能共用
-- [ ] 其他 form.方法，resetFields、submit 等待，目前就一个 getValues
+- [x] 其他 form.方法，resetFields、submit 等待，目前就一个 getValues
 - [ ] 如果 list 对应的是['a','b']这样非 object 的数据咋办
-- [ ] list 的 pagination 点击页码要有效
-- [ ] list 相关的校验问题：display 了一个值，一点没动还是会被校验。。list 的校验 delete 的时候没有删掉
+- [x] list 的 pagination 点击页码要有效
+- [x] list 相关的校验问题：display 了一个值，一点没动还是会被校验。。
+- [ ] list 的校验 delete 的时候会删掉全部
+- [ ] 校验， list 的后面几页不渲染，所以都不会校验。。。咋办
+- [ ] beforeFinish 这个 hook，执行了之后，传给后续的 state 并没有变化。。
 
 Low priority ones
 
@@ -40,6 +56,7 @@ Low priority ones
 15. 同步的 validation 能够生成{formData, errorFields}
 16. UI 更新
 17. 字段支持表达式
+18. 添加 isEditting 用于优化操作的卡顿
 
 UI 是否框要单独处理
 default 值的实现
@@ -239,6 +256,8 @@ debug mode：
 单选可以自动加一个全部（-1）
 
 ### Changelog
+
+- 不在传入 options，而是把 options 展开直接传入，1.便于直接使用组件。2.options 这个字段被 select 组件已经使用了
 
 - 打算把 displayType 变成 layout, 并支持三种: horizontal, vertical, inline
 - 和 antd 一致、原本那个 key 和 value 命名都有点让人迷惑
