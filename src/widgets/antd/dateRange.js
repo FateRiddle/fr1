@@ -10,7 +10,7 @@ const { RangePicker: DateRange } = DatePicker;
 const { RangePicker: TimeRange } = TimePicker;
 
 export default function dateRange(p) {
-  const { format = 'dateTime' } = p.schema;
+  const { format = 'dateTime' } = p && p.schema;
   const onChange = (value, string) => p.onChange(string);
   const RangeComponent = format === 'time' ? TimeRange : DateRange;
   const hocProps = { ...p, onChange, RangeComponent };

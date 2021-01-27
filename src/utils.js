@@ -382,9 +382,12 @@ export function parseSingleExpression(func, formData, _dataPath) {
     return (${funcBody
       .replace(match1, v => JSON.stringify(parser(v)))
       .replace(match2, v => JSON.stringify(parser2(v)))})`;
-    const e = Function(str)();
-    return Function(str)();
-  } else return undefined;
+    try {
+      return Function(str)();
+    } catch (error) {
+      return func;
+    }
+  } else return func;
 }
 
 export const schemaContainsExpression = schema => {
